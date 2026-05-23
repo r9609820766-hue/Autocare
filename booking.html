@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Book Service - AutoCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e63946;
+            border-radius: 4px;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(230, 57, 70, 0.3);
+        }
+
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .logo span {
+            color: #e63946;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #ffffff;
+            font-weight: 500;
+            transition: 0.3s;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: #e63946;
+        }
+
+        .book-btn {
+            background: #e63946;
+            color: white !important;
+            padding: 8px 20px;
+            border-radius: 30px;
+            border: 1px solid #e63946;
+        }
+
+        .book-btn:hover {
+            background: transparent;
+            color: #e63946 !important;
+        }
+
+        .menu-icon, .mobile-menu {
+            display: none;
+        }
+
+        /* Page Header */
+        .page-header {
+            padding: 120px 5% 40px;
+            text-align: center;
+            background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+        }
+
+        .page-header h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header h1 span {
+            color: #e63946;
+        }
+
+        .page-header p {
+            color: #aaa;
+        }
+
+        /* Booking Container */
+        .booking-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 5%;
+        }
+
+        /* Selected Service Card */
+        .selected-service {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(230,57,70,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .service-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .service-price {
+            color: #e63946;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .change-service {
+            color: #e63946;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        /* Booking Form */
+        .booking-form {
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(230,57,70,0.2);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #ddd;
+        }
+
+        .form-group label i {
+            margin-right: 8px;
+            color: #e63946;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(230,57,70,0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #e63946;
+        }
+
+        .form-group input::placeholder, .form-group textarea::placeholder {
+            color: #666;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Time Slots */
+        .time-slots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .time-slot {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(230,57,70,0.3);
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .time-slot:hover, .time-slot.selected {
+            background: #e63946;
+            border-color: #e63946;
+        }
+
+        .time-slot.booked {
+            background: rgba(255,255,255,0.05);
+            border-color: #555;
+            color: #555;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+
+        /* Summary */
+        .booking-summary {
+            background: rgba(230,57,70,0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        .booking-summary p {
+            margin: 5px 0;
+        }
+
+        .total-amount {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #e63946;
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            width: 100%;
+            background: #e63946;
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .submit-btn:hover {
+            background: #c1121f;
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        .footer {
+            background: #050505;
+            color: rgba(255,255,255,0.6);
+            padding: 3rem 5%;
+            text-align: center;
+            border-top: 1px solid rgba(230,57,70,0.3);
+            margin-top: 3rem;
+        }
+
+        .footer a {
+            color: #e63946;
+            text-decoration: none;
+        }
+
+        .developer-credit {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 15px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+            .nav-links {
+                display: none;
+            }
+            .menu-icon {
+                display: block;
+                font-size: 1.5rem;
+                cursor: pointer;
+                color: white;
+            }
+            .mobile-menu {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: #0a0a0a;
+                padding: 2rem;
+                flex-direction: column;
+                gap: 1rem;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+                z-index: 999;
+                display: none;
+                border-bottom: 1px solid #e63946;
+            }
+            .mobile-menu.show {
+                display: flex;
+            }
+            .mobile-menu a {
+                color: white;
+                text-decoration: none;
+                padding: 8px 0;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .selected-service {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="logo">Auto<span>Care</span></div>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="services.html">Services</a>
+        <a href="my-bookings.html">My Bookings</a>
+        <a href="contact.html">Contact</a>
+        <a href="admin-login.html" class="book-btn">Admin Login</a>
+    </div>
+    <div class="menu-icon" onclick="toggleMobileMenu()">
+        <i class="fas fa-bars"></i>
+    </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+    <a href="index.html" onclick="closeMenu()">Home</a>
+    <a href="services.html" onclick="closeMenu()">Services</a>
+    <a href="my-bookings.html" onclick="closeMenu()">My Bookings</a>
+    <a href="contact.html" onclick="closeMenu()">Contact</a>
+    <a href="admin-login.html" onclick="closeMenu()">Admin Login</a>
+</div>
+
+<!-- Page Header -->
+<section class="page-header">
+    <h1>Book <span>Service</span></h1>
+    <p>Fill the details below to schedule your car service</p>
+</section>
+
+<!-- Booking Container -->
+<div class="booking-container">
+    <!-- Selected Service Display -->
+    <div class="selected-service" id="selectedService">
+        <div class="service-info">
+            <h3 id="serviceName">Loading...</h3>
+            <p id="serviceDesc"></p>
+        </div>
+        <div class="service-price" id="servicePrice"></div>
+        <a href="services.html" class="change-service"><i class="fas fa-edit"></i> Change</a>
+    </div>
+
+    <!-- Booking Form -->
+    <form class="booking-form" id="bookingForm">
+        <div class="form-row">
+            <div class="form-group">
+                <label><i class="fas fa-user"></i> Full Name *</label>
+                <input type="text" id="customerName" placeholder="Enter your full name" required>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-phone"></i> Mobile Number *</label>
+                <input type="tel" id="customerMobile" placeholder="10 digit mobile number" maxlength="10" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label><i class="fas fa-envelope"></i> Email (Optional)</label>
+                <input type="email" id="customerEmail" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-car"></i> Vehicle Model *</label>
+                <input type="text" id="vehicleModel" placeholder="e.g., Maruti Suzuki Swift" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label><i class="fas fa-id-card"></i> Vehicle Number *</label>
+                <input type="text" id="vehicleNumber" placeholder="e.g., WB01AB1234" required>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-calendar"></i> Service Date *</label>
+                <input type="date" id="serviceDate" min="">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label><i class="fas fa-clock"></i> Preferred Time *</label>
+            <div class="time-slots" id="timeSlots">
+                <!-- Time slots will be loaded here -->
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label><i class="fas fa-comment"></i> Additional Notes (Optional)</label>
+            <textarea id="additionalNotes" rows="3" placeholder="Any specific issues or requirements..."></textarea>
+        </div>
+
+        <div class="booking-summary">
+            <p>Service Charge: ₹<span id="displayPrice">0</span></p>
+            <p>GST (18%): ₹<span id="displayGST">0</span></p>
+            <p class="total-amount">Total Amount: ₹<span id="displayTotal">0</span></p>
+            <p style="font-size: 0.8rem; color: #aaa;">* Advance payment of ₹200 required to confirm booking</p>
+        </div>
+
+        <button type="submit" class="submit-btn">
+            <i class="fas fa-check-circle"></i> Confirm Booking
+        </button>
+    </form>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <p>&copy; 2026 AutoCare - Professional Car Service Center. All rights reserved.</p>
+    <p style="margin-top: 10px;">📍 123 Service Road, Auto Hub | 📞 +91 98765 43210</p>
+    <div class="developer-credit">
+        <p>Programming by <strong>Rupam Das</strong> | <a href="https://www.indianweb.online" target="_blank">www.indianweb.online</a></p>
+    </div>
+</footer>
+
+<script>
+    // Get service ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const serviceId = parseInt(urlParams.get('service'));
+    
+    let selectedService = null;
+    let allServices = [];
+    let allBookings = [];
+    let selectedTimeSlot = null;
+
+    // Generate time slots (9 AM to 7 PM, 1 hour intervals)
+    const timeSlotsList = [
+        "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
+        "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM",
+        "05:00 PM", "06:00 PM"
+    ];
+
+    // Load services
+    function loadServices() {
+        let stored = localStorage.getItem("garageServices");
+        if (stored && stored !== "undefined" && stored !== "null") {
+            try {
+                allServices = JSON.parse(stored);
+            } catch(e) {
+                allServices = [];
+            }
+        }
+        
+        if (!allServices.length) {
+            // Default services
+            allServices = [
+                { id: 1, name: "Engine Oil Change", price: 299, duration: "30 min", icon: "fas fa-oil-can", description: "Complete engine oil change with filter", category: "maintenance" },
+                { id: 2, name: "AC Service & Repair", price: 999, duration: "1 hour", icon: "fas fa-wind", description: "AC gas refill & complete checkup", category: "repair" },
+                { id: 3, name: "Brake Pad Replacement", price: 799, duration: "45 min", icon: "fas fa-car", description: "Front & rear brake pad replacement", category: "repair" },
+                { id: 4, name: "Tire Rotation & Balancing", price: 399, duration: "30 min", icon: "fas fa-circle", description: "Complete tire rotation & wheel balancing", category: "maintenance" },
+                { id: 5, name: "Battery Check & Replacement", price: 150, duration: "20 min", icon: "fas fa-car-battery", description: "Battery health check & replacement", category: "repair" },
+                { id: 6, name: "Complete Car Wash", price: 299, duration: "45 min", icon: "fas fa-car-wash", description: "Interior & exterior detailing", category: "cleaning" }
+            ];
+            localStorage.setItem("garageServices", JSON.stringify(allServices));
+        }
+        
+        selectedService = allServices.find(s => s.id === serviceId);
+        if (!selectedService && allServices.length > 0) {
+            selectedService = allServices[0];
+        }
+        
+        displaySelectedService();
+    }
+
+    function displaySelectedService() {
+        if (selectedService) {
+            document.getElementById("serviceName").innerText = selectedService.name;
+            document.getElementById("serviceDesc").innerHTML = selectedService.description;
+            document.getElementById("servicePrice").innerHTML = `₹${selectedService.price}`;
+            document.getElementById("displayPrice").innerText = selectedService.price;
+            calculateTotal();
+        }
+    }
+
+    function calculateTotal() {
+        if (selectedService) {
+            const price = selectedService.price;
+            const gst = Math.round(price * 0.18);
+            const total = price + gst;
+            document.getElementById("displayGST").innerText = gst;
+            document.getElementById("displayTotal").innerText = total;
+        }
+    }
+
+    // Load bookings for date
+    function loadBookingsForDate(date) {
+        allBookings = JSON.parse(localStorage.getItem("garageBookings")) || [];
+        return allBookings.filter(b => b.serviceDate === date && b.status !== "cancelled");
+    }
+
+    // Render time slots
+    function renderTimeSlots(date) {
+        const container = document.getElementById("timeSlots");
+        const bookedSlots = loadBookingsForDate(date).map(b => b.timeSlot);
+        
+        container.innerHTML = timeSlotsList.map(slot => {
+            const isBooked = bookedSlots.includes(slot);
+            const isSelected = selectedTimeSlot === slot;
+            return `<div class="time-slot ${isBooked ? 'booked' : ''} ${isSelected ? 'selected' : ''}" 
+                        data-time="${slot}" 
+                        onclick="${isBooked ? '' : `selectTimeSlot('${slot}')`}">
+                        ${slot}
+                    </div>`;
+        }).join('');
+    }
+
+    function selectTimeSlot(slot) {
+        selectedTimeSlot = slot;
+        // Re-render to show selection
+        const date = document.getElementById("serviceDate").value;
+        if (date) {
+            renderTimeSlots(date);
+        }
+    }
+
+    // Set min date (today)
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById("serviceDate").min = today;
+    document.getElementById("serviceDate").value = today;
+    renderTimeSlots(today);
+
+    // Date change handler
+    document.getElementById("serviceDate").addEventListener("change", function() {
+        selectedTimeSlot = null;
+        renderTimeSlots(this.value);
+    });
+
+    // Form submission
+    document.getElementById("bookingForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        
+        const name = document.getElementById("customerName").value.trim();
+        const mobile = document.getElementById("customerMobile").value.trim();
+        const email = document.getElementById("customerEmail").value.trim();
+        const vehicleModel = document.getElementById("vehicleModel").value.trim();
+        const vehicleNumber = document.getElementById("vehicleNumber").value.trim();
+        const serviceDate = document.getElementById("serviceDate").value;
+        const additionalNotes = document.getElementById("additionalNotes").value;
+        
+        // Validation
+        if (!name) { alert("Please enter your name"); return; }
+        if (!mobile || mobile.length !== 10 || isNaN(mobile)) { alert("Please enter valid 10 digit mobile number"); return; }
+        if (!vehicleModel) { alert("Please enter vehicle model"); return; }
+        if (!vehicleNumber) { alert("Please enter vehicle number"); return; }
+        if (!serviceDate) { alert("Please select service date"); return; }
+        if (!selectedTimeSlot) { alert("Please select a time slot"); return; }
+        
+        // Check if slot is already booked
+        const bookedSlots = loadBookingsForDate(serviceDate).map(b => b.timeSlot);
+        if (bookedSlots.includes(selectedTimeSlot)) {
+            alert("This time slot is already booked. Please select another time.");
+            return;
+        }
+        
+        const price = selectedService.price;
+        const gst = Math.round(price * 0.18);
+        const total = price + gst;
+        
+        const bookingData = {
+            bookingId: "SRV" + Date.now(),
+            serviceId: selectedService.id,
+            serviceName: selectedService.name,
+            customerName: name,
+            customerMobile: mobile,
+            customerEmail: email,
+            vehicleModel: vehicleModel,
+            vehicleNumber: vehicleNumber,
+            serviceDate: serviceDate,
+            timeSlot: selectedTimeSlot,
+            additionalNotes: additionalNotes,
+            serviceCharge: price,
+            gst: gst,
+            totalAmount: total,
+            advancePaid: 200,
+            status: "pending",
+            bookingTime: new Date().toISOString()
+        };
+        
+        // Save booking
+        let bookings = JSON.parse(localStorage.getItem("garageBookings")) || [];
+        bookings.push(bookingData);
+        localStorage.setItem("garageBookings", JSON.stringify(bookings));
+        
+        // Save current booking for success page
+        localStorage.setItem("currentBooking", JSON.stringify(bookingData));
+        
+        // Redirect to success page
+        window.location.href = "booking-success.html";
+    });
+
+    // Mobile Menu Functions
+    function toggleMobileMenu() {
+        document.getElementById('mobileMenu').classList.toggle('show');
+    }
+    
+    function closeMenu() {
+        document.getElementById('mobileMenu').classList.remove('show');
+    }
+
+    loadServices();
+</script>
+</body>
+</html>

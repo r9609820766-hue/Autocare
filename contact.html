@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Contact Us - AutoCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e63946;
+            border-radius: 4px;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(230, 57, 70, 0.3);
+        }
+
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .logo span {
+            color: #e63946;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #ffffff;
+            font-weight: 500;
+            transition: 0.3s;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: #e63946;
+        }
+
+        .book-btn {
+            background: #e63946;
+            color: white !important;
+            padding: 8px 20px;
+            border-radius: 30px;
+            border: 1px solid #e63946;
+        }
+
+        .book-btn:hover {
+            background: transparent;
+            color: #e63946 !important;
+        }
+
+        .menu-icon, .mobile-menu {
+            display: none;
+        }
+
+        /* Page Header */
+        .page-header {
+            padding: 120px 5% 40px;
+            text-align: center;
+            background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+        }
+
+        .page-header h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header h1 span {
+            color: #e63946;
+        }
+
+        .page-header p {
+            color: #aaa;
+        }
+
+        /* Contact Container */
+        .contact-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 5%;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        /* Contact Info Cards */
+        .contact-info {
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(230,57,70,0.2);
+        }
+
+        .info-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid #e63946;
+            display: inline-block;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(230,57,70,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #e63946;
+        }
+
+        .info-content h4 {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 0.3rem;
+        }
+
+        .info-content p {
+            font-size: 1rem;
+        }
+
+        .info-content a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .info-content a:hover {
+            color: #e63946;
+        }
+
+        /* Social Links */
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .social-link:hover {
+            background: #e63946;
+            transform: translateY(-3px);
+        }
+
+        /* Contact Form */
+        .contact-form {
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(230,57,70,0.2);
+        }
+
+        .form-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(230,57,70,0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #e63946;
+        }
+
+        .form-group input::placeholder, .form-group textarea::placeholder {
+            color: #666;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: #e63946;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .submit-btn:hover {
+            background: #c1121f;
+            transform: translateY(-2px);
+        }
+
+        /* Map Section */
+        .map-section {
+            padding: 2rem 5%;
+        }
+
+        .map-container {
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            padding: 1rem;
+            border: 1px solid rgba(230,57,70,0.2);
+        }
+
+        .map-container iframe {
+            width: 100%;
+            height: 350px;
+            border-radius: 15px;
+            border: none;
+        }
+
+        /* Business Hours */
+        .hours-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .hour-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .hour-day {
+            color: #aaa;
+        }
+
+        .hour-time {
+            color: white;
+        }
+
+        .closed {
+            color: #e63946;
+        }
+
+        /* Toast Message */
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4caf50;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            z-index: 2000;
+            display: none;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* Footer */
+        .footer {
+            background: #050505;
+            color: rgba(255,255,255,0.6);
+            padding: 2rem 5%;
+            text-align: center;
+            border-top: 1px solid rgba(230,57,70,0.3);
+            margin-top: 2rem;
+        }
+
+        .developer-credit {
+            margin-top: 10px;
+            font-size: 0.8rem;
+        }
+
+        .footer a {
+            color: #e63946;
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+            .nav-links {
+                display: none;
+            }
+            .menu-icon {
+                display: block;
+                font-size: 1.5rem;
+                cursor: pointer;
+                color: white;
+            }
+            .mobile-menu {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: #0a0a0a;
+                padding: 2rem;
+                flex-direction: column;
+                gap: 1rem;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+                z-index: 999;
+                display: none;
+                border-bottom: 1px solid #e63946;
+            }
+            .mobile-menu.show {
+                display: flex;
+            }
+            .mobile-menu a {
+                color: white;
+                text-decoration: none;
+                padding: 8px 0;
+            }
+            .contact-container {
+                grid-template-columns: 1fr;
+            }
+            .hours-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="logo">Auto<span>Care</span></div>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="services.html">Services</a>
+        <a href="my-bookings.html">My Bookings</a>
+        <a href="contact.html" class="active">Contact</a>
+        <a href="admin-login.html" class="book-btn">Admin Login</a>
+    </div>
+    <div class="menu-icon" onclick="toggleMobileMenu()">
+        <i class="fas fa-bars"></i>
+    </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+    <a href="index.html" onclick="closeMenu()">Home</a>
+    <a href="services.html" onclick="closeMenu()">Services</a>
+    <a href="my-bookings.html" onclick="closeMenu()">My Bookings</a>
+    <a href="contact.html" onclick="closeMenu()">Contact</a>
+    <a href="admin-login.html" onclick="closeMenu()">Admin Login</a>
+</div>
+
+<!-- Page Header -->
+<section class="page-header">
+    <h1>Contact <span>Us</span></h1>
+    <p>Get in touch with us for any inquiries or support</p>
+</section>
+
+<!-- Contact Container -->
+<div class="contact-container">
+    <!-- Contact Info -->
+    <div class="contact-info">
+        <h3 class="info-title"><i class="fas fa-address-card"></i> Get in Touch</h3>
+        
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div class="info-content">
+                <h4>Our Location</h4>
+                <p>123 Service Road, Auto Hub,<br>Kolkata - 700001, West Bengal</p>
+            </div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="fas fa-phone-alt"></i>
+            </div>
+            <div class="info-content">
+                <h4>Phone Number</h4>
+                <p><a href="tel:+919876543210">+91 98765 43210</a><br>
+                   <a href="tel:+919876543211">+91 98765 43211</a> (Emergency)</p>
+            </div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <div class="info-content">
+                <h4>Email Address</h4>
+                <p><a href="mailto:support@autocare.com">support@autocare.com</a><br>
+                   <a href="mailto:booking@autocare.com">booking@autocare.com</a></p>
+            </div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="fab fa-whatsapp"></i>
+            </div>
+            <div class="info-content">
+                <h4>WhatsApp</h4>
+                <p><a href="https://wa.me/919876543210">+91 98765 43210</a></p>
+            </div>
+        </div>
+        
+        <div class="social-links">
+            <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+    </div>
+    
+    <!-- Contact Form -->
+    <div class="contact-form">
+        <h3 class="form-title"><i class="fas fa-paper-plane"></i> Send us a Message</h3>
+        
+        <form id="contactForm">
+            <div class="form-group">
+                <input type="text" id="contactName" placeholder="Your Full Name *" required>
+            </div>
+            <div class="form-group">
+                <input type="email" id="contactEmail" placeholder="Your Email Address *" required>
+            </div>
+            <div class="form-group">
+                <input type="tel" id="contactPhone" placeholder="Your Mobile Number *" required>
+            </div>
+            <div class="form-group">
+                <select id="contactSubject">
+                    <option value="general">General Inquiry</option>
+                    <option value="booking">Booking Related</option>
+                    <option value="service">Service Issue</option>
+                    <option value="feedback">Feedback</option>
+                    <option value="complaint">Complaint</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <textarea id="contactMessage" rows="4" placeholder="Your Message *" required></textarea>
+            </div>
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-paper-plane"></i> Send Message
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Business Hours Section -->
+<div class="contact-container" style="padding-top: 0;">
+    <div class="contact-info">
+        <h3 class="info-title"><i class="fas fa-clock"></i> Business Hours</h3>
+        <div class="hours-grid">
+            <div class="hour-item">
+                <span class="hour-day">Monday - Friday</span>
+                <span class="hour-time">9:00 AM - 8:00 PM</span>
+            </div>
+            <div class="hour-item">
+                <span class="hour-day">Saturday</span>
+                <span class="hour-time">10:00 AM - 6:00 PM</span>
+            </div>
+            <div class="hour-item">
+                <span class="hour-day">Sunday</span>
+                <span class="hour-time closed">Closed</span>
+            </div>
+            <div class="hour-item">
+                <span class="hour-day">Emergency Support</span>
+                <span class="hour-time">24/7 Available</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="contact-info">
+        <h3 class="info-title"><i class="fas fa-car"></i> Quick Service</h3>
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="fas fa-tools"></i>
+            </div>
+            <div class="info-content">
+                <h4>Emergency Roadside Assistance</h4>
+                <p>Call us anytime: <strong>+91 98765 43210</strong></p>
+            </div>
+        </div>
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="info-content">
+                <h4>Book a Service</h4>
+                <p>Visit our <a href="services.html" style="color:#e63946;">Services Page</a> to book online</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Map Section -->
+<div class="map-section">
+    <div class="map-container">
+        <iframe 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3684.0!2d88.3639!3d22.5726!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a0277e4b5c5c5c5%3A0x0!2zMjLCsDM0JzIxLjQiTiA4OMKwMjEnNTAuMCJF!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin" 
+            allowfullscreen="" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+    </div>
+</div>
+
+<!-- Toast Message -->
+<div id="toastMsg" class="toast-msg">✅ Message sent successfully!</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <p>&copy; 2026 AutoCare - Professional Car Service Center. All rights reserved.</p>
+    <div class="developer-credit">
+        <p>Programming by <strong>Rupam Das</strong> | <a href="https://www.indianweb.online" target="_blank">www.indianweb.online</a></p>
+    </div>
+</footer>
+
+<script>
+    // Contact Form Submission
+    document.getElementById("contactForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        
+        const name = document.getElementById("contactName").value.trim();
+        const email = document.getElementById("contactEmail").value.trim();
+        const phone = document.getElementById("contactPhone").value.trim();
+        const subject = document.getElementById("contactSubject").value;
+        const message = document.getElementById("contactMessage").value.trim();
+        
+        // Validation
+        if (!name) {
+            alert("Please enter your name");
+            return;
+        }
+        if (!email || !email.includes("@")) {
+            alert("Please enter valid email address");
+            return;
+        }
+        if (!phone || phone.length < 10) {
+            alert("Please enter valid mobile number");
+            return;
+        }
+        if (!message) {
+            alert("Please enter your message");
+            return;
+        }
+        
+        // Save to localStorage (demo purpose)
+        const contactMessages = JSON.parse(localStorage.getItem("contactMessages")) || [];
+        const newMessage = {
+            id: "MSG" + Date.now(),
+            name: name,
+            email: email,
+            phone: phone,
+            subject: subject,
+            message: message,
+            date: new Date().toISOString(),
+            status: "unread"
+        };
+        contactMessages.push(newMessage);
+        localStorage.setItem("contactMessages", JSON.stringify(contactMessages));
+        
+        // Show success message
+        const toast = document.getElementById("toastMsg");
+        toast.style.display = "block";
+        setTimeout(() => {
+            toast.style.display = "none";
+        }, 3000);
+        
+        // Reset form
+        document.getElementById("contactForm").reset();
+    });
+
+    // Mobile Menu Functions
+    function toggleMobileMenu() {
+        document.getElementById('mobileMenu').classList.toggle('show');
+    }
+    
+    function closeMenu() {
+        document.getElementById('mobileMenu').classList.remove('show');
+    }
+</script>
+</body>
+</html>

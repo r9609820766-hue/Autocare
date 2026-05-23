@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Admin Login - AutoCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Background Image */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=1600') no-repeat center center/cover;
+            opacity: 0.15;
+            z-index: 0;
+        }
+
+        /* Login Container */
+        .login-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 450px;
+            margin: 20px;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-card {
+            background: rgba(15, 15, 15, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 2.5rem;
+            border: 1px solid rgba(230, 57, 70, 0.3);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        /* Logo */
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo h2 {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .logo h2 span {
+            color: #e63946;
+        }
+
+        .logo p {
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        /* Role Selector */
+        .role-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: rgba(255,255,255,0.05);
+            padding: 5px;
+            border-radius: 50px;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 40px;
+            transition: 0.3s;
+            text-align: center;
+        }
+
+        .role-btn.active {
+            background: #e63946;
+            color: white;
+        }
+
+        .role-btn i {
+            margin-right: 8px;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #ddd;
+            font-size: 0.9rem;
+        }
+
+        .form-group label i {
+            margin-right: 8px;
+            color: #e63946;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(230,57,70,0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #e63946;
+        }
+
+        .form-group input::placeholder {
+            color: #666;
+        }
+
+        /* Login Button */
+        .login-btn {
+            width: 100%;
+            background: #e63946;
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 0.5rem;
+        }
+
+        .login-btn:hover {
+            background: #c1121f;
+            transform: translateY(-2px);
+        }
+
+        /* Demo Credentials */
+        .demo-credentials {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(230,57,70,0.2);
+        }
+
+        .demo-credentials p {
+            color: #aaa;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .demo-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #888;
+            padding: 3px 0;
+        }
+
+        .demo-row span:first-child {
+            color: #e63946;
+        }
+
+        /* Back Link */
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #aaa;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: 0.3s;
+        }
+
+        .back-link:hover {
+            color: #e63946;
+        }
+
+        /* Error Message */
+        .error-msg {
+            background: rgba(244,67,54,0.2);
+            border: 1px solid #f44336;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: #f44336;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            .login-card {
+                padding: 1.5rem;
+            }
+            .role-btn {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="logo">
+            <h2>Auto<span>Care</span></h2>
+            <p>Management Login</p>
+        </div>
+
+        <!-- Role Selector -->
+        <div class="role-selector">
+            <button class="role-btn active" data-role="admin" onclick="selectRole('admin')">
+                <i class="fas fa-user-shield"></i> Admin
+            </button>
+            <button class="role-btn" data-role="employee" onclick="selectRole('employee')">
+                <i class="fas fa-user-tie"></i> Employee
+            </button>
+            <button class="role-btn" data-role="mechanic" onclick="selectRole('mechanic')">
+                <i class="fas fa-wrench"></i> Mechanic
+            </button>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMsg" class="error-msg">
+            <i class="fas fa-exclamation-triangle"></i> Invalid credentials! Please check and try again.
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label><i class="fas fa-user"></i> Username / Email</label>
+                <input type="text" id="username" placeholder="Enter username or email" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-lock"></i> Password</label>
+                <input type="password" id="password" placeholder="Enter password">
+            </div>
+            <button type="submit" class="login-btn">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+        </form>
+
+        <!-- Demo Credentials -->
+        <div class="demo-credentials">
+            <p><i class="fas fa-info-circle"></i> Demo Credentials</p>
+            <div class="demo-row">
+                <span>Admin:</span>
+                <span>admin@autocare.com / admin123</span>
+            </div>
+            <div class="demo-row">
+                <span>Employee:</span>
+                <span>employee@autocare.com / emp123</span>
+            </div>
+            <div class="demo-row">
+                <span>Mechanic:</span>
+                <span>mechanic@autocare.com / mech123</span>
+            </div>
+        </div>
+
+        <a href="index.html" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Home
+        </a>
+    </div>
+</div>
+
+<script>
+    // Current selected role
+    let currentRole = "admin";
+
+    // Function to select role
+    function selectRole(role) {
+        currentRole = role;
+        document.querySelectorAll('.role-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-role') === role) {
+                btn.classList.add('active');
+            }
+        });
+        
+        // Update placeholder based on role
+        const usernameInput = document.getElementById("username");
+        if (role === "admin") {
+            usernameInput.placeholder = "Enter admin email (admin@autocare.com)";
+        } else if (role === "employee") {
+            usernameInput.placeholder = "Enter employee email (employee@autocare.com)";
+        } else {
+            usernameInput.placeholder = "Enter mechanic email (mechanic@autocare.com)";
+        }
+    }
+
+    // Handle login
+    function handleLogin(event) {
+        event.preventDefault();
+        
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const errorMsg = document.getElementById("errorMsg");
+        
+        // Hide previous error
+        errorMsg.style.display = "none";
+        
+        // Demo credentials
+        const adminCredentials = { username: "admin@autocare.com", password: "admin123" };
+        const employeeCredentials = { username: "employee@autocare.com", password: "emp123" };
+        const mechanicCredentials = { username: "mechanic@autocare.com", password: "mech123" };
+        
+        let isValid = false;
+        let redirectPage = "";
+        
+        if (currentRole === "admin") {
+            if (username === adminCredentials.username && password === adminCredentials.password) {
+                isValid = true;
+                redirectPage = "admin-dashboard.html";
+                localStorage.setItem("adminLoggedIn", "true");
+                localStorage.setItem("userRole", "admin");
+                localStorage.setItem("loggedInUser", username);
+            }
+        } else if (currentRole === "employee") {
+            if (username === employeeCredentials.username && password === employeeCredentials.password) {
+                isValid = true;
+                redirectPage = "employee-dashboard.html";
+                localStorage.setItem("employeeLoggedIn", "true");
+                localStorage.setItem("userRole", "employee");
+                localStorage.setItem("loggedInUser", username);
+            }
+        } else if (currentRole === "mechanic") {
+            if (username === mechanicCredentials.username && password === mechanicCredentials.password) {
+                isValid = true;
+                redirectPage = "mechanic-dashboard.html";
+                localStorage.setItem("mechanicLoggedIn", "true");
+                localStorage.setItem("userRole", "mechanic");
+                localStorage.setItem("loggedInUser", username);
+            }
+        }
+        
+        if (isValid) {
+            // Redirect to respective dashboard
+            window.location.href = redirectPage;
+        } else {
+            errorMsg.style.display = "block";
+            // Clear password field
+            document.getElementById("password").value = "";
+            setTimeout(() => {
+                errorMsg.style.display = "none";
+            }, 3000);
+        }
+    }
+
+    // Check if already logged in and redirect
+    if (localStorage.getItem("adminLoggedIn") === "true") {
+        window.location.href = "admin-dashboard.html";
+    }
+    if (localStorage.getItem("employeeLoggedIn") === "true") {
+        window.location.href = "employee-dashboard.html";
+    }
+    if (localStorage.getItem("mechanicLoggedIn") === "true") {
+        window.location.href = "mechanic-dashboard.html";
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Booking Management - AutoCare Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #0f0f0f 0%, #1a1a1a 100%);
+            color: white;
+            transition: 0.3s ease;
+            z-index: 1000;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .sidebar.open { left: 0; }
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(230,57,70,0.3);
+        }
+        .sidebar-header h3 { font-family: 'Orbitron', monospace; font-size: 1.5rem; }
+        .sidebar-header span { color: #e63946; }
+        .sidebar-header p { font-size: 0.7rem; opacity: 0.7; margin-top: 5px; }
+        .sidebar-menu { padding: 20px 0; }
+        .menu-item {
+            padding: 14px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.3s;
+            color: rgba(255,255,255,0.8);
+            border-left: 3px solid transparent;
+            text-decoration: none;
+        }
+        .menu-item:hover { background: rgba(230,57,70,0.1); color: white; }
+        .menu-item.active { background: rgba(230,57,70,0.2); color: #e63946; border-left-color: #e63946; }
+        .menu-item i { width: 24px; font-size: 1.1rem; }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        .overlay.active { display: block; }
+
+        .main-content { min-height: 100vh; transition: 0.3s; }
+        .top-bar {
+            background: rgba(15,15,15,0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .menu-toggle { background: #e63946; color: white; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-size: 1.2rem; }
+        .page-title { font-size: 1.2rem; font-weight: 600; color: white; }
+        .logout-btn { background: #f44336; color: white; border: none; padding: 8px 15px; border-radius: 25px; cursor: pointer; font-size: 0.85rem; }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 18px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid rgba(230,57,70,0.2);
+        }
+        .stat-card h3 { font-size: 1.6rem; color: #e63946; }
+        .stat-card p { color: #aaa; font-size: 0.8rem; }
+
+        /* Filter Bar */
+        .filter-bar {
+            background: rgba(255,255,255,0.03);
+            padding: 15px 20px;
+            margin: 0 20px 20px;
+            border-radius: 15px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-bar select, .filter-bar input {
+            padding: 10px 16px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(230,57,70,0.3);
+            border-radius: 30px;
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+        .filter-bar button {
+            background: #e63946;
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        .search-box { flex: 1; min-width: 200px; display: flex; gap: 10px; }
+        .search-box input { flex: 1; }
+
+        /* Bookings Table */
+        .bookings-container {
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            margin: 0 20px 20px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 14px 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { color: #e63946; font-weight: 600; }
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; display: inline-block; }
+        .status-pending { background: #ff9800; color: #1a1a1a; }
+        .status-confirmed { background: #4caf50; color: white; }
+        .status-completed { background: #2196f3; color: white; }
+        .status-cancelled { background: #f44336; color: white; }
+        .btn-sm {
+            background: #e63946;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            margin: 2px;
+        }
+        .btn-danger { background: #f44336; }
+        .btn-success { background: #4caf50; }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1100;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1a1a1a;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 25px;
+            border: 1px solid #e63946;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: white; }
+        .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .no-data { text-align: center; padding: 40px; color: #888; }
+
+        .footer { background: #050505; color: rgba(255,255,255,0.6); padding: 1.5rem 5%; text-align: center; border-top: 1px solid rgba(230,57,70,0.3); margin-top: 20px; }
+
+        @media (min-width: 992px) {
+            .sidebar { left: 0; }
+            .menu-toggle { display: none; }
+            .main-content { margin-left: 280px; }
+        }
+        @media (max-width: 768px) {
+            th, td { font-size: 0.7rem; padding: 8px 5px; }
+            .filter-bar { flex-direction: column; margin: 0 15px 15px; }
+            .search-box { width: 100%; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3>Auto<span>Care</span></h3>
+        <p>Admin Panel</p>
+    </div>
+    <div class="sidebar-menu">
+        <a href="admin-dashboard.html" class="menu-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="admin-bookings.html" class="menu-item active"><i class="fas fa-calendar-alt"></i> Bookings</a>
+        <a href="admin-services.html" class="menu-item"><i class="fas fa-wrench"></i> Services</a>
+        <a href="admin-customers.html" class="menu-item"><i class="fas fa-users"></i> Customers</a>
+        <a href="admin-employees.html" class="menu-item"><i class="fas fa-user-tie"></i> Employees</a>
+        <a href="admin-reports.html" class="menu-item"><i class="fas fa-chart-line"></i> Reports</a>
+        <a href="admin-settings.html" class="menu-item"><i class="fas fa-cog"></i> Settings</a>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main-content">
+    <div class="top-bar">
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <div class="page-title"><i class="fas fa-calendar-alt"></i> Booking Management</div>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <div class="filter-bar">
+        <select id="statusFilter">
+            <option value="all">📋 All Bookings</option>
+            <option value="pending">⏳ Pending</option>
+            <option value="confirmed">✅ Confirmed</option>
+            <option value="completed">✓ Completed</option>
+            <option value="cancelled">❌ Cancelled</option>
+        </select>
+        <input type="date" id="dateFilter">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 Search by ID, Name, Vehicle...">
+            <button onclick="filterBookings()"><i class="fas fa-search"></i> Search</button>
+        </div>
+        <button onclick="exportBookings()"><i class="fas fa-download"></i> Export CSV</button>
+    </div>
+
+    <div class="bookings-container">
+        <div class="table-responsive">
+            <table id="bookingsTable">
+                <thead>
+                    <tr><th>Booking ID</th><th>Date</th><th>Customer</th><th>Vehicle</th><th>Service</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
+                </thead>
+                <tbody id="bookingsList"></tbody>
+            </table>
+        </div>
+        <div id="noBookingsMsg" class="no-data" style="display: none;">No bookings found</div>
+    </div>
+</div>
+
+<!-- Booking Details Modal -->
+<div id="bookingModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Booking Details</h3>
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+        </div>
+        <div id="modalContent"></div>
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+            <button class="btn-sm" id="modalConfirmBtn" onclick="confirmBookingFromModal()">✅ Confirm</button>
+            <button class="btn-sm btn-success" id="modalCompleteBtn" onclick="completeBookingFromModal()">✓ Complete</button>
+            <button class="btn-sm btn-danger" id="modalCancelBtn" onclick="cancelBookingFromModal()">❌ Cancel</button>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>&copy; 2026 AutoCare - Professional Car Service Center</p>
+</footer>
+
+<script>
+    if(localStorage.getItem("adminLoggedIn") !== "true") window.location.href = "admin-login.html";
+
+    // Sidebar
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const menuToggle = document.getElementById('menuToggle');
+    function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('active'); }
+    function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+    menuToggle.onclick = openSidebar;
+    window.addEventListener('resize', () => { if(window.innerWidth >= 992) closeSidebar(); });
+
+    let allBookings = [];
+    let currentBookingId = null;
+
+    function loadBookings() {
+        allBookings = JSON.parse(localStorage.getItem("garageBookings")) || [];
+        filterBookings();
+        loadStats();
+    }
+
+    function loadStats() {
+        const total = allBookings.length;
+        const pending = allBookings.filter(b => b.status === "pending").length;
+        const confirmed = allBookings.filter(b => b.status === "confirmed").length;
+        const completed = allBookings.filter(b => b.status === "completed").length;
+        const totalRevenue = allBookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+        document.getElementById("statsGrid").innerHTML = `
+            <div class="stat-card"><h3>${total}</h3><p>📋 Total</p></div>
+            <div class="stat-card"><h3>${pending}</h3><p>⏳ Pending</p></div>
+            <div class="stat-card"><h3>${confirmed}</h3><p>✅ Confirmed</p></div>
+            <div class="stat-card"><h3>${completed}</h3><p>✓ Completed</p></div>
+            <div class="stat-card"><h3>₹${totalRevenue.toLocaleString()}</h3><p>💰 Revenue</p></div>
+        `;
+    }
+
+    function filterBookings() {
+        const status = document.getElementById("statusFilter").value;
+        const date = document.getElementById("dateFilter").value;
+        const search = document.getElementById("searchInput").value.toLowerCase();
+        let filtered = [...allBookings];
+        if (status !== "all") filtered = filtered.filter(b => b.status === status);
+        if (date) filtered = filtered.filter(b => b.serviceDate === date);
+        if (search) filtered = filtered.filter(b => 
+            b.bookingId.toLowerCase().includes(search) ||
+            b.customerName.toLowerCase().includes(search) ||
+            b.vehicleNumber.toLowerCase().includes(search)
+        );
+        filtered.sort((a,b) => new Date(b.bookingTime) - new Date(a.bookingTime));
+        renderBookings(filtered);
+    }
+
+    function renderBookings(bookings) {
+        const tbody = document.getElementById("bookingsList");
+        const noMsg = document.getElementById("noBookingsMsg");
+        if (bookings.length === 0) { tbody.innerHTML = ""; noMsg.style.display = "block"; return; }
+        noMsg.style.display = "none";
+        tbody.innerHTML = bookings.map(b => `
+            <tr>
+                <td><strong>${b.bookingId}</strong></td>
+                <td><small>${b.serviceDate}</small></td>
+                <td>${b.customerName}<br><small>${b.customerMobile}</small></td>
+                <td>${b.vehicleModel}<br><small>${b.vehicleNumber}</small></td>
+                <td>${b.serviceName}</td>
+                <td>₹${b.totalAmount}</td>
+                <td><span class="status-badge status-${b.status}">${b.status}</span></td>
+                <td>
+                    <button class="btn-sm" onclick="viewBooking('${b.bookingId}')"><i class="fas fa-eye"></i></button>
+                    ${b.status === "pending" ? `<button class="btn-sm btn-success" onclick="updateStatus('${b.bookingId}', 'confirmed')"><i class="fas fa-check"></i></button>` : ''}
+                    ${b.status === "confirmed" ? `<button class="btn-sm btn-success" onclick="updateStatus('${b.bookingId}', 'completed')"><i class="fas fa-check-double"></i></button>` : ''}
+                    ${b.status !== "cancelled" ? `<button class="btn-sm btn-danger" onclick="updateStatus('${b.bookingId}', 'cancelled')"><i class="fas fa-times"></i></button>` : ''}
+                 </td>
+            <tr>
+        `).join('');
+    }
+
+    function viewBooking(bookingId) {
+        const booking = allBookings.find(b => b.bookingId === bookingId);
+        if (!booking) return;
+        currentBookingId = bookingId;
+        document.getElementById("modalContent").innerHTML = `
+            <div class="detail-row"><span>Booking ID:</span><span>${booking.bookingId}</span></div>
+            <div class="detail-row"><span>Customer Name:</span><span>${booking.customerName}</span></div>
+            <div class="detail-row"><span>Mobile:</span><span>${booking.customerMobile}</span></div>
+            <div class="detail-row"><span>Email:</span><span>${booking.customerEmail || '-'}</span></div>
+            <div class="detail-row"><span>Vehicle:</span><span>${booking.vehicleModel} (${booking.vehicleNumber})</span></div>
+            <div class="detail-row"><span>Service:</span><span>${booking.serviceName}</span></div>
+            <div class="detail-row"><span>Date:</span><span>${booking.serviceDate}</span></div>
+            <div class="detail-row"><span>Time:</span><span>${booking.timeSlot}</span></div>
+            <div class="detail-row"><span>Service Charge:</span><span>₹${booking.serviceCharge}</span></div>
+            <div class="detail-row"><span>GST (18%):</span><span>₹${booking.gst}</span></div>
+            <div class="detail-row"><span>Total Amount:</span><span><strong>₹${booking.totalAmount}</strong></span></div>
+            <div class="detail-row"><span>Advance Paid:</span><span>₹${booking.advancePaid || 200}</span></div>
+            <div class="detail-row"><span>Status:</span><span class="status-badge status-${booking.status}">${booking.status}</span></div>
+            ${booking.additionalNotes ? `<div class="detail-row"><span>Notes:</span><span>${booking.additionalNotes}</span></div>` : ''}
+        `;
+        document.getElementById("bookingModal").classList.add("active");
+    }
+
+    function updateStatus(bookingId, newStatus) {
+        const index = allBookings.findIndex(b => b.bookingId === bookingId);
+        if (index !== -1) {
+            allBookings[index].status = newStatus;
+            localStorage.setItem("garageBookings", JSON.stringify(allBookings));
+            loadBookings();
+        }
+    }
+
+    function confirmBookingFromModal() { if (currentBookingId) updateStatus(currentBookingId, "confirmed"); closeModal(); }
+    function completeBookingFromModal() { if (currentBookingId) updateStatus(currentBookingId, "completed"); closeModal(); }
+    function cancelBookingFromModal() { if (currentBookingId) updateStatus(currentBookingId, "cancelled"); closeModal(); }
+
+    function closeModal() { document.getElementById("bookingModal").classList.remove("active"); currentBookingId = null; }
+
+    function exportBookings() {
+        let csv = "Booking ID,Customer,Mobile,Vehicle,Service,Date,Time,Amount,Status\n";
+        allBookings.forEach(b => {
+            csv += `"${b.bookingId}","${b.customerName}","${b.customerMobile}","${b.vehicleNumber}","${b.serviceName}","${b.serviceDate}","${b.timeSlot}",${b.totalAmount},"${b.status}"\n`;
+        });
+        const blob = new Blob(["\uFEFF" + csv], {type: "text/csv;charset=utf-8;"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `autocare-bookings-${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+    }
+
+    document.getElementById("statusFilter").addEventListener("change", filterBookings);
+    document.getElementById("dateFilter").addEventListener("change", filterBookings);
+    document.getElementById("searchInput").addEventListener("keyup", filterBookings);
+
+    function logout() { localStorage.removeItem("adminLoggedIn"); window.location.href = "admin-login.html"; }
+    loadBookings();
+</script>
+</body>
+</html>

@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Admin Dashboard - AutoCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #0f0f0f 0%, #1a1a1a 100%);
+            color: white;
+            transition: 0.3s ease;
+            z-index: 1000;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(230,57,70,0.3);
+        }
+
+        .sidebar-header h3 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+        }
+
+        .sidebar-header span {
+            color: #e63946;
+        }
+
+        .sidebar-header p {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .menu-item {
+            padding: 14px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            color: rgba(255,255,255,0.8);
+            border-left: 3px solid transparent;
+            text-decoration: none;
+        }
+
+        .menu-item:hover {
+            background: rgba(230,57,70,0.1);
+            color: white;
+        }
+
+        .menu-item.active {
+            background: rgba(230,57,70,0.2);
+            color: #e63946;
+            border-left-color: #e63946;
+        }
+
+        .menu-item i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Main Content */
+        .main-content {
+            min-height: 100vh;
+            transition: 0.3s;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: rgba(15,15,15,0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .menu-toggle {
+            background: #e63946;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .logout-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid rgba(230,57,70,0.2);
+            transition: 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: #e63946;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            color: #e63946;
+        }
+
+        .stat-card p {
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 0 20px 20px;
+        }
+
+        .action-card {
+            background: rgba(255,255,255,0.03);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 1px solid rgba(230,57,70,0.2);
+            text-decoration: none;
+            display: block;
+        }
+
+        .action-card:hover {
+            transform: translateY(-3px);
+            border-color: #e63946;
+            background: rgba(230,57,70,0.1);
+        }
+
+        .action-card i {
+            font-size: 2rem;
+            color: #e63946;
+            margin-bottom: 10px;
+        }
+
+        .action-card span {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 20px;
+        }
+
+        .dashboard-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(230,57,70,0.2);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .section-header h3 {
+            color: white;
+        }
+
+        .view-all {
+            color: #e63946;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th, td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        th {
+            color: #e63946;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background: #ff9800;
+            color: #1a1a1a;
+        }
+
+        .status-confirmed {
+            background: #4caf50;
+            color: white;
+        }
+
+        .status-completed {
+            background: #2196f3;
+            color: white;
+        }
+
+        .btn-sm {
+            background: #e63946;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+
+        /* Chart */
+        .chart-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Footer */
+        .footer {
+            background: #050505;
+            color: rgba(255,255,255,0.6);
+            padding: 1.5rem 5%;
+            text-align: center;
+            border-top: 1px solid rgba(230,57,70,0.3);
+        }
+
+        /* Responsive */
+        @media (min-width: 992px) {
+            .sidebar {
+                left: 0;
+            }
+            .menu-toggle {
+                display: none;
+            }
+            .main-content {
+                margin-left: 280px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+                padding: 15px;
+            }
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                padding: 0 15px 15px;
+            }
+            .stat-card h3 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3>Auto<span>Care</span></h3>
+        <p>Admin Panel</p>
+    </div>
+    <div class="sidebar-menu">
+        <a href="admin-dashboard.html" class="menu-item active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="admin-bookings.html" class="menu-item"><i class="fas fa-calendar-alt"></i> Bookings</a>
+        <a href="admin-services.html" class="menu-item"><i class="fas fa-wrench"></i> Services</a>
+        <a href="admin-customers.html" class="menu-item"><i class="fas fa-users"></i> Customers</a>
+        <a href="admin-employees.html" class="menu-item"><i class="fas fa-user-tie"></i> Employees</a>
+        <a href="admin-reports.html" class="menu-item"><i class="fas fa-chart-line"></i> Reports</a>
+        <a href="admin-settings.html" class="menu-item"><i class="fas fa-cog"></i> Settings</a>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main-content">
+    <div class="top-bar">
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <div class="page-title">Dashboard</div>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <a href="admin-bookings.html" class="action-card">
+            <i class="fas fa-calendar-check"></i>
+            <span>View Bookings</span>
+        </a>
+        <a href="admin-services.html" class="action-card">
+            <i class="fas fa-wrench"></i>
+            <span>Manage Services</span>
+        </a>
+        <a href="admin-customers.html" class="action-card">
+            <i class="fas fa-users"></i>
+            <span>Customers</span>
+        </a>
+        <a href="admin-reports.html" class="action-card">
+            <i class="fas fa-chart-line"></i>
+            <span>Reports</span>
+        </a>
+    </div>
+
+    <!-- Recent Bookings & Chart -->
+    <div class="content-area">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;">
+            <!-- Recent Bookings -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-clock"></i> Recent Bookings</h3>
+                    <a href="admin-bookings.html" class="view-all">View All →</a>
+                </div>
+                <div class="table-responsive">
+                    <table id="recentBookingsTable">
+                        <thead>
+                            <tr><th>ID</th><th>Customer</th><th>Service</th><th>Date</th><th>Status</th></tr>
+                        </thead>
+                        <tbody id="recentBookingsList"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Sales Chart -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-chart-line"></i> Weekly Revenue</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>&copy; 2026 AutoCare - Professional Car Service Center</p>
+</footer>
+
+<script>
+    // Check login
+    if(localStorage.getItem("adminLoggedIn") !== "true") {
+        window.location.href = "admin-login.html";
+    }
+
+    // Sidebar Toggle
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const menuToggle = document.getElementById('menuToggle');
+
+    function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('active'); }
+    function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+    menuToggle.onclick = openSidebar;
+
+    window.addEventListener('resize', () => {
+        if(window.innerWidth >= 992) {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        }
+    });
+
+    // Load Dashboard Data
+    function loadDashboard() {
+        loadStats();
+        loadRecentBookings();
+        loadRevenueChart();
+    }
+
+    function loadStats() {
+        const bookings = JSON.parse(localStorage.getItem("garageBookings")) || [];
+        const totalBookings = bookings.length;
+        const pendingBookings = bookings.filter(b => b.status === "pending").length;
+        const confirmedBookings = bookings.filter(b => b.status === "confirmed").length;
+        const completedBookings = bookings.filter(b => b.status === "completed").length;
+        const totalRevenue = bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+
+        document.getElementById("statsGrid").innerHTML = `
+            <div class="stat-card"><h3>${totalBookings}</h3><p>📋 Total Bookings</p></div>
+            <div class="stat-card"><h3>${pendingBookings}</h3><p>⏳ Pending</p></div>
+            <div class="stat-card"><h3>${confirmedBookings}</h3><p>✅ Confirmed</p></div>
+            <div class="stat-card"><h3>${completedBookings}</h3><p>✓ Completed</p></div>
+            <div class="stat-card"><h3>₹${totalRevenue.toLocaleString()}</h3><p>💰 Total Revenue</p></div>
+            <div class="stat-card"><h3>${bookings.filter(b => b.serviceDate === new Date().toISOString().slice(0,10)).length}</h3><p>📅 Today's Bookings</p></div>
+        `;
+    }
+
+    function loadRecentBookings() {
+        const bookings = JSON.parse(localStorage.getItem("garageBookings")) || [];
+        const recent = bookings.slice(-5).reverse();
+        const tbody = document.getElementById("recentBookingsList");
+        
+        if(recent.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No bookings found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = recent.map(b => `
+            <tr>
+                <td><small>${b.bookingId}</small></td>
+                <td>${b.customerName}</td>
+                <td>${b.serviceName}</td>
+                <td><small>${b.serviceDate}</small></td>
+                <td><span class="status-badge status-${b.status}">${b.status}</span></td>
+            </tr>
+        `).join('');
+    }
+
+    function loadRevenueChart() {
+        const bookings = JSON.parse(localStorage.getItem("garageBookings")) || [];
+        const last7Days = [];
+        const revenueData = [];
+        
+        for(let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toISOString().slice(0,10);
+            last7Days.push(dateStr.slice(5));
+            
+            const dayRevenue = bookings.filter(b => b.serviceDate === dateStr && b.status === "completed")
+                .reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+            revenueData.push(dayRevenue);
+        }
+        
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: last7Days,
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: revenueData,
+                    borderColor: '#e63946',
+                    backgroundColor: 'rgba(230,57,70,0.1)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { labels: { color: 'white' } }
+                },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: 'white' } },
+                    x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: 'white' } }
+                }
+            }
+        });
+    }
+
+    function logout() {
+        localStorage.removeItem("adminLoggedIn");
+        window.location.href = "admin-login.html";
+    }
+
+    loadDashboard();
+</script>
+</body>
+</html>

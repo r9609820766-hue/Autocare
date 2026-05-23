@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Booking Confirmed - AutoCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(230, 57, 70, 0.3);
+        }
+
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .logo span {
+            color: #e63946;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #ffffff;
+            font-weight: 500;
+            transition: 0.3s;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: #e63946;
+        }
+
+        .book-btn {
+            background: #e63946;
+            color: white !important;
+            padding: 8px 20px;
+            border-radius: 30px;
+            border: 1px solid #e63946;
+        }
+
+        .book-btn:hover {
+            background: transparent;
+            color: #e63946 !important;
+        }
+
+        .menu-icon, .mobile-menu {
+            display: none;
+        }
+
+        /* Success Container */
+        .success-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 5% 60px;
+        }
+
+        .success-card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 3rem;
+            max-width: 550px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid rgba(230,57,70,0.3);
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        .success-icon i {
+            font-size: 3rem;
+            color: white;
+        }
+
+        .success-card h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .success-card h1 span {
+            color: #4caf50;
+        }
+
+        .booking-id {
+            background: rgba(230,57,70,0.2);
+            padding: 0.8rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .booking-details {
+            text-align: left;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: 15px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: #aaa;
+        }
+
+        .detail-value {
+            font-weight: 500;
+            color: white;
+        }
+
+        .amount-highlight {
+            color: #e63946;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .btn-primary {
+            background: #e63946;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #e63946;
+        }
+
+        .btn-primary:hover {
+            background: transparent;
+            color: #e63946;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid white;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-outline:hover {
+            background: white;
+            color: #1a1a2e;
+        }
+
+        /* Payment Info */
+        .payment-info {
+            background: rgba(255,193,7,0.1);
+            border: 1px solid #ffc107;
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .payment-info p {
+            color: #ffc107;
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: #050505;
+            color: rgba(255,255,255,0.6);
+            padding: 2rem 5%;
+            text-align: center;
+            border-top: 1px solid rgba(230,57,70,0.3);
+        }
+
+        .developer-credit {
+            margin-top: 10px;
+            font-size: 0.8rem;
+        }
+
+        .footer a {
+            color: #e63946;
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+            .nav-links {
+                display: none;
+            }
+            .menu-icon {
+                display: block;
+                font-size: 1.5rem;
+                cursor: pointer;
+                color: white;
+            }
+            .mobile-menu {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: #0a0a0a;
+                padding: 2rem;
+                flex-direction: column;
+                gap: 1rem;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+                z-index: 999;
+                display: none;
+                border-bottom: 1px solid #e63946;
+            }
+            .mobile-menu.show {
+                display: flex;
+            }
+            .mobile-menu a {
+                color: white;
+                text-decoration: none;
+                padding: 8px 0;
+            }
+            .success-card {
+                padding: 1.5rem;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+            .btn-primary, .btn-outline {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="logo">Auto<span>Care</span></div>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="services.html">Services</a>
+        <a href="my-bookings.html">My Bookings</a>
+        <a href="contact.html">Contact</a>
+        <a href="admin-login.html" class="book-btn">Admin Login</a>
+    </div>
+    <div class="menu-icon" onclick="toggleMobileMenu()">
+        <i class="fas fa-bars"></i>
+    </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+    <a href="index.html" onclick="closeMenu()">Home</a>
+    <a href="services.html" onclick="closeMenu()">Services</a>
+    <a href="my-bookings.html" onclick="closeMenu()">My Bookings</a>
+    <a href="contact.html" onclick="closeMenu()">Contact</a>
+    <a href="admin-login.html" onclick="closeMenu()">Admin Login</a>
+</div>
+
+<!-- Success Container -->
+<div class="success-container">
+    <div class="success-card">
+        <div class="success-icon">
+            <i class="fas fa-check"></i>
+        </div>
+        
+        <h1>Booking <span>Confirmed!</span></h1>
+        <p>Your service request has been successfully submitted</p>
+        
+        <div class="booking-id" id="bookingIdDisplay">
+            Booking ID: Loading...
+        </div>
+        
+        <div class="booking-details" id="bookingDetails">
+            <!-- Details will be loaded dynamically -->
+        </div>
+        
+        <div class="payment-info">
+            <p><i class="fas fa-info-circle"></i> Please pay ₹200 advance to confirm your booking. Our team will contact you shortly.</p>
+        </div>
+        
+        <div class="button-group">
+            <a href="my-bookings.html" class="btn-primary">
+                <i class="fas fa-list"></i> My Bookings
+            </a>
+            <a href="index.html" class="btn-outline">
+                <i class="fas fa-home"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <p>&copy; 2026 AutoCare - Professional Car Service Center. All rights reserved.</p>
+    <div class="developer-credit">
+        <p>Programming by <strong>Rupam Das</strong> | <a href="https://www.indianweb.online" target="_blank">www.indianweb.online</a></p>
+    </div>
+</footer>
+
+<script>
+    // Get current booking from localStorage
+    const currentBooking = JSON.parse(localStorage.getItem("currentBooking"));
+    
+    if (!currentBooking) {
+        // If no booking found, redirect to home
+        window.location.href = "index.html";
+    }
+    
+    // Display booking ID
+    document.getElementById("bookingIdDisplay").innerHTML = `Booking ID: ${currentBooking.bookingId}`;
+    
+    // Display booking details
+    const detailsHtml = `
+        <div class="detail-row">
+            <span class="detail-label">Service:</span>
+            <span class="detail-value">${currentBooking.serviceName}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Customer Name:</span>
+            <span class="detail-value">${currentBooking.customerName}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Mobile Number:</span>
+            <span class="detail-value">${currentBooking.customerMobile}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Vehicle:</span>
+            <span class="detail-value">${currentBooking.vehicleModel} (${currentBooking.vehicleNumber})</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Date & Time:</span>
+            <span class="detail-value">${currentBooking.serviceDate} | ${currentBooking.timeSlot}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Service Charge:</span>
+            <span class="detail-value">₹${currentBooking.serviceCharge}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">GST (18%):</span>
+            <span class="detail-value">₹${currentBooking.gst}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Total Amount:</span>
+            <span class="detail-value amount-highlight">₹${currentBooking.totalAmount}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Advance to Pay:</span>
+            <span class="detail-value amount-highlight">₹200</span>
+        </div>
+    `;
+    
+    document.getElementById("bookingDetails").innerHTML = detailsHtml;
+    
+    // Optional: Clear current booking after displaying (to prevent refresh issues)
+    // localStorage.removeItem("currentBooking");
+    
+    // Mobile Menu Functions
+    function toggleMobileMenu() {
+        document.getElementById('mobileMenu').classList.toggle('show');
+    }
+    
+    function closeMenu() {
+        document.getElementById('mobileMenu').classList.remove('show');
+    }
+</script>
+</body>
+</html>
