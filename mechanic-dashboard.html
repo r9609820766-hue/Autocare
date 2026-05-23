@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Mechanic Dashboard - AutoCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #0f0f0f 0%, #1a1a1a 100%);
+            color: white;
+            transition: 0.3s ease;
+            z-index: 1000;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .sidebar.open { left: 0; }
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(230,57,70,0.3);
+        }
+        .sidebar-header h3 { font-family: 'Orbitron', monospace; font-size: 1.5rem; }
+        .sidebar-header span { color: #e63946; }
+        .sidebar-header p { font-size: 0.7rem; opacity: 0.7; margin-top: 5px; }
+        .sidebar-menu { padding: 20px 0; }
+        .menu-item {
+            padding: 14px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.3s;
+            color: rgba(255,255,255,0.8);
+            border-left: 3px solid transparent;
+            text-decoration: none;
+        }
+        .menu-item:hover { background: rgba(230,57,70,0.1); color: white; }
+        .menu-item.active { background: rgba(230,57,70,0.2); color: #e63946; border-left-color: #e63946; }
+        .menu-item i { width: 24px; font-size: 1.1rem; }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        .overlay.active { display: block; }
+
+        .main-content { min-height: 100vh; transition: 0.3s; }
+        .top-bar {
+            background: rgba(15,15,15,0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .menu-toggle { background: #e63946; color: white; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-size: 1.2rem; }
+        .page-title { font-size: 1.2rem; font-weight: 600; color: white; }
+        .logout-btn { background: #f44336; color: white; border: none; padding: 8px 15px; border-radius: 25px; cursor: pointer; }
+
+        /* Mechanic Info Bar */
+        .mechanic-info-bar {
+            background: rgba(255,255,255,0.05);
+            padding: 15px 20px;
+            margin: 20px 20px 0;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .mechanic-avatar {
+            width: 50px;
+            height: 50px;
+            background: #e63946;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+        .mechanic-details { display: flex; align-items: center; gap: 15px; }
+        .mechanic-name { font-weight: 600; }
+        .mechanic-section { font-size: 0.8rem; color: #aaa; }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 18px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid rgba(230,57,70,0.2);
+        }
+        .stat-card h3 { font-size: 1.6rem; color: #e63946; }
+        .stat-card p { color: #aaa; font-size: 0.85rem; }
+
+        /* Filter Tabs */
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 0 20px 20px;
+        }
+        .filter-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(230,57,70,0.3);
+            padding: 10px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            color: white;
+            transition: 0.3s;
+        }
+        .filter-btn:hover, .filter-btn.active { background: #e63946; border-color: #e63946; }
+
+        /* Assignments Container */
+        .assignments-container {
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            margin: 0 20px 20px;
+            padding: 20px;
+        }
+        .assignment-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 18px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(230,57,70,0.2);
+            transition: 0.3s;
+        }
+        .assignment-card:hover { border-color: #e63946; }
+        .assignment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .assignment-id { font-weight: bold; color: #e63946; }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+        }
+        .status-pending { background: #ff9800; color: #1a1a1a; }
+        .status-confirmed { background: #4caf50; color: white; }
+        .status-completed { background: #2196f3; color: white; }
+        .assignment-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+            margin: 12px 0;
+        }
+        .detail-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+        .detail-item i { width: 25px; color: #e63946; }
+        .assignment-actions { margin-top: 12px; display: flex; gap: 10px; }
+        .btn-sm {
+            background: #e63946;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .btn-success { background: #4caf50; }
+        .btn-warning { background: #ff9800; }
+        .btn-info { background: #2196f3; }
+
+        /* Profile Section */
+        .profile-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            margin: 20px;
+            padding: 25px;
+            display: none;
+        }
+        .profile-section.active { display: block; }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            background: #e63946;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .info-label { color: #aaa; }
+        .edit-profile-btn {
+            background: #e63946;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1100;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1a1a1a;
+            border-radius: 20px;
+            max-width: 450px;
+            width: 90%;
+            padding: 25px;
+            border: 1px solid #e63946;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: white; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #aaa; }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(230,57,70,0.3);
+            border-radius: 8px;
+            color: white;
+        }
+
+        .no-data { text-align: center; padding: 40px; color: #888; }
+        .footer { background: #050505; color: rgba(255,255,255,0.6); padding: 1.5rem 5%; text-align: center; border-top: 1px solid rgba(230,57,70,0.3); margin-top: 20px; }
+
+        @media (min-width: 992px) {
+            .sidebar { left: 0; }
+            .menu-toggle { display: none; }
+            .main-content { margin-left: 280px; }
+        }
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); padding: 15px; }
+            .assignment-details { grid-template-columns: 1fr; }
+            .filter-tabs { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3>Auto<span>Care</span></h3>
+        <p>Mechanic Panel</p>
+    </div>
+    <div class="sidebar-menu">
+        <div class="menu-item active" data-panel="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</div>
+        <div class="menu-item" data-panel="assignments"><i class="fas fa-tasks"></i> My Assignments</div>
+        <div class="menu-item" data-panel="profile"><i class="fas fa-user"></i> My Profile</div>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main-content">
+    <div class="top-bar">
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <div class="page-title" id="pageTitle">Mechanic Dashboard</div>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+
+    <div class="mechanic-info-bar" id="mechanicInfoBar"></div>
+
+    <!-- Dashboard Panel -->
+    <div id="panel-dashboard" class="panel-content">
+        <div class="stats-grid" id="statsGrid"></div>
+        <div class="filter-tabs">
+            <button class="filter-btn active" data-status="all">All Assignments</button>
+            <button class="filter-btn" data-status="pending">Pending</button>
+            <button class="filter-btn" data-status="confirmed">In Progress</button>
+            <button class="filter-btn" data-status="completed">Completed</button>
+        </div>
+        <div class="assignments-container" id="dashboardAssignments"></div>
+    </div>
+
+    <!-- Assignments Panel -->
+    <div id="panel-assignments" class="panel-content" style="display:none;">
+        <div class="filter-tabs">
+            <button class="filter-btn active" data-status="all">All</button>
+            <button class="filter-btn" data-status="pending">Pending</button>
+            <button class="filter-btn" data-status="confirmed">In Progress</button>
+            <button class="filter-btn" data-status="completed">Completed</button>
+        </div>
+        <div class="assignments-container" id="assignmentsList"></div>
+    </div>
+
+    <!-- Profile Panel -->
+    <div id="panel-profile" class="panel-content" style="display:none;">
+        <div class="profile-section active" id="profileSection">
+            <div class="profile-header">
+                <div class="profile-avatar"><i class="fas fa-user"></i></div>
+                <div><h2 id="profileName">Mechanic Name</h2><p id="profileSection">Mechanic</p></div>
+            </div>
+            <div class="info-row"><span class="info-label">Staff ID</span><span id="profileId">MEC001</span></div>
+            <div class="info-row"><span class="info-label">Mobile Number</span><span id="profileMobile">+91 98765 43210</span></div>
+            <div class="info-row"><span class="info-label">Email</span><span id="profileEmail">mechanic@autocare.com</span></div>
+            <div class="info-row"><span class="info-label">Section</span><span id="profileSectionName">Mechanic</span></div>
+            <div class="info-row"><span class="info-label">Join Date</span><span id="profileJoinDate">2024-01-01</span></div>
+            <button class="edit-profile-btn" onclick="openEditModal()"><i class="fas fa-edit"></i> Edit Profile</button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit Profile</h3>
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="form-group"><label>Full Name</label><input type="text" id="editName"></div>
+        <div class="form-group"><label>Mobile Number</label><input type="tel" id="editMobile" maxlength="10"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="editEmail"></div>
+        <div class="form-group"><label>New Password</label><input type="password" id="editPassword" placeholder="Leave blank to keep same"></div>
+        <button class="btn-sm" onclick="saveProfile()" style="width:100%;">Save Changes</button>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>&copy; 2026 AutoCare - Professional Car Service Center</p>
+</footer>
+
+<script>
+    if(localStorage.getItem("mechanicLoggedIn") !== "true") window.location.href = "admin-login.html";
+
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const menuToggle = document.getElementById('menuToggle');
+    function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('active'); }
+    function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+    menuToggle.onclick = openSidebar;
+    window.addEventListener('resize', () => { if(window.innerWidth >= 992) closeSidebar(); });
+
+    // Panel switching
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.onclick = function() {
+            const panel = this.dataset.panel;
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelectorAll('.panel-content').forEach(p => p.style.display = 'none');
+            document.getElementById(`panel-${panel}`).style.display = 'block';
+            document.getElementById('pageTitle').innerText = this.innerText.trim();
+            if (panel === 'assignments') loadAllAssignments();
+            if (panel === 'profile') loadProfile();
+            if (window.innerWidth < 992) closeSidebar();
+        };
+    });
+
+    let currentMechanic = { id: "MEC001", name: "Mechanic Kumar", mobile: "9876543210", email: "mechanic@autocare.com", section: "mechanic", joinDate: "2024-01-01" };
+    let allStaff = JSON.parse(localStorage.getItem("garageEmployees")) || [];
+    let found = allStaff.find(s => s.id === "MEC001");
+    if (found) currentMechanic = found;
+
+    document.getElementById("mechanicInfoBar").innerHTML = `
+        <div class="mechanic-details">
+            <div class="mechanic-avatar"><i class="fas fa-wrench"></i></div>
+            <div><div class="mechanic-name">${currentMechanic.name}</div><div class="mechanic-section">Mechanic | ID: ${currentMechanic.id}</div></div>
+        </div>
+        <div><i class="fas fa-calendar"></i> Today: ${new Date().toLocaleDateString()}</div>
+    `;
+
+    let allBookings = [];
+    let currentFilter = "all";
+
+    function loadDashboard() {
+        allBookings = JSON.parse(localStorage.getItem("garageBookings")) || [];
+        const total = allBookings.length;
+        const pending = allBookings.filter(b => b.status === "pending").length;
+        const inProgress = allBookings.filter(b => b.status === "confirmed").length;
+        const completed = allBookings.filter(b => b.status === "completed").length;
+        const myTasks = allBookings.filter(b => b.assignedMechanic === currentMechanic.id).length;
+        document.getElementById("statsGrid").innerHTML = `
+            <div class="stat-card"><h3>${total}</h3><p>📋 Total Bookings</p></div>
+            <div class="stat-card"><h3>${pending}</h3><p>⏳ Pending</p></div>
+            <div class="stat-card"><h3>${inProgress}</h3><p>🔧 In Progress</p></div>
+            <div class="stat-card"><h3>${completed}</h3><p>✓ Completed</p></div>
+            <div class="stat-card"><h3>${myTasks}</h3><p>📌 My Tasks</p></div>
+        `;
+        filterDashboard();
+    }
+
+    function filterDashboard() {
+        let filtered = [...allBookings];
+        if (currentFilter !== "all") filtered = filtered.filter(b => b.status === currentFilter);
+        filtered.sort((a,b) => new Date(b.serviceDate) - new Date(a.serviceDate));
+        renderDashboard(filtered.slice(0, 5));
+    }
+
+    function renderDashboard(bookings) {
+        const container = document.getElementById("dashboardAssignments");
+        if (bookings.length === 0) { container.innerHTML = '<div class="no-data">No assignments found</div>'; return; }
+        container.innerHTML = bookings.map(b => `
+            <div class="assignment-card">
+                <div class="assignment-header">
+                    <span class="assignment-id">${b.bookingId}</span>
+                    <span class="status-badge status-${b.status}">${b.status === 'pending' ? '⏳ Pending' : b.status === 'confirmed' ? '🔧 In Progress' : '✓ Completed'}</span>
+                </div>
+                <div class="assignment-details">
+                    <div class="detail-item"><i class="fas fa-user"></i> ${b.customerName}</div>
+                    <div class="detail-item"><i class="fas fa-car"></i> ${b.vehicleModel} (${b.vehicleNumber})</div>
+                    <div class="detail-item"><i class="fas fa-calendar"></i> ${b.serviceDate} | ${b.timeSlot}</div>
+                    <div class="detail-item"><i class="fas fa-wrench"></i> ${b.serviceName}</div>
+                </div>
+                <div class="assignment-actions">
+                    ${b.status === "pending" ? `<button class="btn-sm" onclick="updateStatus('${b.bookingId}', 'confirmed')"><i class="fas fa-play"></i> Start Work</button>` : ''}
+                    ${b.status === "confirmed" ? `<button class="btn-sm btn-success" onclick="updateStatus('${b.bookingId}', 'completed')"><i class="fas fa-check"></i> Complete</button>` : ''}
+                    <button class="btn-sm btn-info" onclick="viewDetails('${b.bookingId}')"><i class="fas fa-eye"></i> Details</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function loadAllAssignments() {
+        let filtered = [...allBookings];
+        if (currentFilter !== "all") filtered = filtered.filter(b => b.status === currentFilter);
+        filtered.sort((a,b) => new Date(b.serviceDate) - new Date(a.serviceDate));
+        document.getElementById("assignmentsList").innerHTML = filtered.map(b => `
+            <div class="assignment-card">
+                <div class="assignment-header">
+                    <span class="assignment-id">${b.bookingId}</span>
+                    <span class="status-badge status-${b.status}">${b.status === 'pending' ? '⏳ Pending' : b.status === 'confirmed' ? '🔧 In Progress' : '✓ Completed'}</span>
+                </div>
+                <div class="assignment-details">
+                    <div class="detail-item"><i class="fas fa-user"></i> ${b.customerName} (${b.customerMobile})</div>
+                    <div class="detail-item"><i class="fas fa-car"></i> ${b.vehicleModel} (${b.vehicleNumber})</div>
+                    <div class="detail-item"><i class="fas fa-calendar"></i> ${b.serviceDate} | ${b.timeSlot}</div>
+                    <div class="detail-item"><i class="fas fa-wrench"></i> ${b.serviceName}</div>
+                    <div class="detail-item"><i class="fas fa-rupee-sign"></i> ₹${b.totalAmount}</div>
+                </div>
+                <div class="assignment-actions">
+                    ${b.status === "pending" ? `<button class="btn-sm" onclick="updateStatus('${b.bookingId}', 'confirmed')"><i class="fas fa-play"></i> Start Work</button>` : ''}
+                    ${b.status === "confirmed" ? `<button class="btn-sm btn-success" onclick="updateStatus('${b.bookingId}', 'completed')"><i class="fas fa-check"></i> Complete</button>` : ''}
+                    <button class="btn-sm btn-info" onclick="viewDetails('${b.bookingId}')"><i class="fas fa-eye"></i> Details</button>
+                </div>
+            </div>
+        `).join('');
+        if (filtered.length === 0) document.getElementById("assignmentsList").innerHTML = '<div class="no-data">No assignments found</div>';
+    }
+
+    function viewDetails(bookingId) {
+        const booking = allBookings.find(b => b.bookingId === bookingId);
+        if (!booking) return;
+        alert(`📋 Booking Details:\n\nCustomer: ${booking.customerName}\nMobile: ${booking.customerMobile}\nVehicle: ${booking.vehicleModel} (${booking.vehicleNumber})\nService: ${booking.serviceName}\nDate: ${booking.serviceDate}\nTime: ${booking.timeSlot}\nAmount: ₹${booking.totalAmount}\nStatus: ${booking.status}`);
+    }
+
+    function updateStatus(bookingId, newStatus) {
+        let bookings = JSON.parse(localStorage.getItem("garageBookings")) || [];
+        const index = bookings.findIndex(b => b.bookingId === bookingId);
+        if (index !== -1) {
+            bookings[index].status = newStatus;
+            bookings[index].assignedMechanic = currentMechanic.id;
+            localStorage.setItem("garageBookings", JSON.stringify(bookings));
+            loadDashboard();
+            if (document.getElementById("panel-assignments").style.display !== 'none') loadAllAssignments();
+        }
+    }
+
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+        btn.onclick = function() {
+            document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+            this.classList.add("active");
+            currentFilter = this.dataset.status;
+            if (document.getElementById("panel-dashboard").style.display !== 'none') filterDashboard();
+            else if (document.getElementById("panel-assignments").style.display !== 'none') loadAllAssignments();
+        };
+    });
+
+    function loadProfile() {
+        document.getElementById("profileName").innerText = currentMechanic.name;
+        document.getElementById("profileId").innerText = currentMechanic.id;
+        document.getElementById("profileMobile").innerText = currentMechanic.mobile;
+        document.getElementById("profileEmail").innerText = currentMechanic.email || "Not provided";
+        document.getElementById("profileSectionName").innerText = currentMechanic.section === "mechanic" ? "Mechanic" : "Head Mechanic";
+        document.getElementById("profileJoinDate").innerText = currentMechanic.joinDate || "2024-01-01";
+    }
+
+    function openEditModal() {
+        document.getElementById("editName").value = currentMechanic.name;
+        document.getElementById("editMobile").value = currentMechanic.mobile;
+        document.getElementById("editEmail").value = currentMechanic.email || "";
+        document.getElementById("editPassword").value = "";
+        document.getElementById("editModal").classList.add("active");
+    }
+
+    function saveProfile() {
+        const newName = document.getElementById("editName").value.trim();
+        const newMobile = document.getElementById("editMobile").value.trim();
+        const newEmail = document.getElementById("editEmail").value.trim();
+        const newPassword = document.getElementById("editPassword").value;
+        if (!newName || !newMobile) { alert("Please fill name and mobile"); return; }
+        if (newMobile.length !== 10) { alert("Enter valid mobile number"); return; }
+        let staff = JSON.parse(localStorage.getItem("garageEmployees")) || [];
+        const index = staff.findIndex(s => s.id === currentMechanic.id);
+        if (index !== -1) {
+            staff[index].name = newName;
+            staff[index].mobile = newMobile;
+            staff[index].email = newEmail;
+            if (newPassword) staff[index].password = newPassword;
+            localStorage.setItem("garageEmployees", JSON.stringify(staff));
+            currentMechanic = staff[index];
+        }
+        document.getElementById("mechanicInfoBar").innerHTML = `
+            <div class="mechanic-details"><div class="mechanic-avatar"><i class="fas fa-wrench"></i></div>
+            <div><div class="mechanic-name">${currentMechanic.name}</div><div class="mechanic-section">Mechanic | ID: ${currentMechanic.id}</div></div></div>
+            <div><i class="fas fa-calendar"></i> Today: ${new Date().toLocaleDateString()}</div>
+        `;
+        loadProfile();
+        closeModal();
+        alert("Profile updated!");
+    }
+
+    function closeModal() { document.getElementById("editModal").classList.remove("active"); }
+    function logout() { localStorage.removeItem("mechanicLoggedIn"); window.location.href = "admin-login.html"; }
+
+    loadDashboard();
+</script>
+</body>
+</html>
