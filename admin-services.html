@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Service Management - AutoCare Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #0f0f0f 0%, #1a1a1a 100%);
+            color: white;
+            transition: 0.3s ease;
+            z-index: 1000;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .sidebar.open { left: 0; }
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(230,57,70,0.3);
+        }
+        .sidebar-header h3 { font-family: 'Orbitron', monospace; font-size: 1.5rem; }
+        .sidebar-header span { color: #e63946; }
+        .sidebar-header p { font-size: 0.7rem; opacity: 0.7; margin-top: 5px; }
+        .sidebar-menu { padding: 20px 0; }
+        .menu-item {
+            padding: 14px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.3s;
+            color: rgba(255,255,255,0.8);
+            border-left: 3px solid transparent;
+            text-decoration: none;
+        }
+        .menu-item:hover { background: rgba(230,57,70,0.1); color: white; }
+        .menu-item.active { background: rgba(230,57,70,0.2); color: #e63946; border-left-color: #e63946; }
+        .menu-item i { width: 24px; font-size: 1.1rem; }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        .overlay.active { display: block; }
+
+        .main-content { min-height: 100vh; transition: 0.3s; }
+        .top-bar {
+            background: rgba(15,15,15,0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .menu-toggle { background: #e63946; color: white; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-size: 1.2rem; }
+        .page-title { font-size: 1.2rem; font-weight: 600; color: white; }
+        .logout-btn { background: #f44336; color: white; border: none; padding: 8px 15px; border-radius: 25px; cursor: pointer; }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 18px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid rgba(230,57,70,0.2);
+        }
+        .stat-card h3 { font-size: 1.6rem; color: #e63946; }
+        .stat-card p { color: #aaa; font-size: 0.85rem; }
+
+        /* Action Bar */
+        .action-bar {
+            background: rgba(255,255,255,0.03);
+            padding: 15px 20px;
+            margin: 0 20px 20px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .btn-primary {
+            background: #e63946;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary:hover { background: #c1121f; }
+        .btn-sm {
+            background: #e63946;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            margin: 2px;
+        }
+        .btn-danger { background: #f44336; }
+        .btn-warning { background: #ff9800; }
+
+        /* Services Grid */
+        .services-container {
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            margin: 0 20px 20px;
+            padding: 20px;
+        }
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .service-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 18px;
+            border: 1px solid rgba(230,57,70,0.2);
+            transition: 0.3s;
+        }
+        .service-card:hover { border-color: #e63946; transform: translateY(-2px); }
+        .service-icon { font-size: 2rem; color: #e63946; margin-bottom: 10px; }
+        .service-name { font-size: 1.2rem; font-weight: 600; margin-bottom: 5px; }
+        .service-price { color: #e63946; font-size: 1.3rem; font-weight: bold; margin: 8px 0; }
+        .service-duration { color: #aaa; font-size: 0.8rem; }
+        .service-actions { margin-top: 12px; display: flex; gap: 8px; }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1100;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1a1a1a;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            padding: 25px;
+            border: 1px solid #e63946;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: white; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #aaa; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(230,57,70,0.3);
+            border-radius: 8px;
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+        .no-data { text-align: center; padding: 40px; color: #888; }
+
+        .footer { background: #050505; color: rgba(255,255,255,0.6); padding: 1.5rem 5%; text-align: center; border-top: 1px solid rgba(230,57,70,0.3); margin-top: 20px; }
+
+        @media (min-width: 992px) {
+            .sidebar { left: 0; }
+            .menu-toggle { display: none; }
+            .main-content { margin-left: 280px; }
+        }
+        @media (max-width: 768px) {
+            .services-grid { grid-template-columns: 1fr; }
+            .action-bar { flex-direction: column; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3>Auto<span>Care</span></h3>
+        <p>Admin Panel</p>
+    </div>
+    <div class="sidebar-menu">
+        <a href="admin-dashboard.html" class="menu-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="admin-bookings.html" class="menu-item"><i class="fas fa-calendar-alt"></i> Bookings</a>
+        <a href="admin-services.html" class="menu-item active"><i class="fas fa-wrench"></i> Services</a>
+        <a href="admin-customers.html" class="menu-item"><i class="fas fa-users"></i> Customers</a>
+        <a href="admin-employees.html" class="menu-item"><i class="fas fa-user-tie"></i> Employees</a>
+        <a href="admin-reports.html" class="menu-item"><i class="fas fa-chart-line"></i> Reports</a>
+        <a href="admin-settings.html" class="menu-item"><i class="fas fa-cog"></i> Settings</a>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main-content">
+    <div class="top-bar">
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <div class="page-title"><i class="fas fa-wrench"></i> Service Management</div>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <div class="action-bar">
+        <button class="btn-primary" onclick="openServiceModal()"><i class="fas fa-plus"></i> Add Service</button>
+        <button class="btn-primary" onclick="exportServices()" style="background:#2196f3;"><i class="fas fa-download"></i> Export CSV</button>
+        <button class="btn-primary" onclick="resetDefaultServices()" style="background:#ff9800;"><i class="fas fa-undo"></i> Reset Default</button>
+    </div>
+
+    <div class="services-container">
+        <div class="services-grid" id="servicesGrid"></div>
+        <div id="noServicesMsg" class="no-data" style="display: none;">No services found. Click "Add Service" to create one.</div>
+    </div>
+</div>
+
+<!-- Service Modal -->
+<div id="serviceModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Add Service</h3>
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="form-group">
+            <label>Service Name</label>
+            <input type="text" id="serviceName" placeholder="e.g., Engine Oil Change">
+        </div>
+        <div class="form-group">
+            <label>Price (₹)</label>
+            <input type="number" id="servicePrice" placeholder="e.g., 299">
+        </div>
+        <div class="form-group">
+            <label>Duration</label>
+            <input type="text" id="serviceDuration" placeholder="e.g., 30 min, 1 hour">
+        </div>
+        <div class="form-group">
+            <label>Category</label>
+            <select id="serviceCategory">
+                <option value="maintenance">Maintenance</option>
+                <option value="repair">Repair</option>
+                <option value="cleaning">Cleaning</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea id="serviceDescription" rows="3" placeholder="Service description..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>Icon (Font Awesome)</label>
+            <input type="text" id="serviceIcon" placeholder="fas fa-oil-can">
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn-primary" onclick="saveService()">Save Service</button>
+            <button class="btn-primary btn-danger" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>&copy; 2026 AutoCare - Professional Car Service Center</p>
+</footer>
+
+<script>
+    if(localStorage.getItem("adminLoggedIn") !== "true") window.location.href = "admin-login.html";
+
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const menuToggle = document.getElementById('menuToggle');
+    function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('active'); }
+    function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+    menuToggle.onclick = openSidebar;
+    window.addEventListener('resize', () => { if(window.innerWidth >= 992) closeSidebar(); });
+
+    let allServices = [];
+    let editServiceId = null;
+
+    const defaultServices = [
+        { id: 1, name: "Engine Oil Change", price: 299, duration: "30 min", icon: "fas fa-oil-can", description: "Complete engine oil change with genuine oil filter", category: "maintenance" },
+        { id: 2, name: "AC Service & Repair", price: 999, duration: "1 hour", icon: "fas fa-wind", description: "AC gas refill, leak check & complete system inspection", category: "repair" },
+        { id: 3, name: "Brake Pad Replacement", price: 799, duration: "45 min", icon: "fas fa-car", description: "Front & rear brake pad replacement with cleaning", category: "repair" },
+        { id: 4, name: "Tire Rotation & Balancing", price: 399, duration: "30 min", icon: "fas fa-circle", description: "Complete tire rotation & wheel balancing service", category: "maintenance" },
+        { id: 5, name: "Battery Check & Replacement", price: 150, duration: "20 min", icon: "fas fa-car-battery", description: "Battery health check & replacement if needed", category: "repair" },
+        { id: 6, name: "Complete Car Wash", price: 299, duration: "45 min", icon: "fas fa-car-wash", description: "Interior vacuum, exterior wash & detailing", category: "cleaning" }
+    ];
+
+    function loadServices() {
+        let stored = localStorage.getItem("garageServices");
+        if (stored && stored !== "undefined" && stored !== "null") {
+            try {
+                allServices = JSON.parse(stored);
+            } catch(e) { allServices = [...defaultServices]; }
+        } else {
+            allServices = [...defaultServices];
+            localStorage.setItem("garageServices", JSON.stringify(allServices));
+        }
+        renderServices();
+        loadStats();
+    }
+
+    function loadStats() {
+        const total = allServices.length;
+        const maintenance = allServices.filter(s => s.category === "maintenance").length;
+        const repair = allServices.filter(s => s.category === "repair").length;
+        const cleaning = allServices.filter(s => s.category === "cleaning").length;
+        const totalValue = allServices.reduce((sum, s) => sum + s.price, 0);
+        document.getElementById("statsGrid").innerHTML = `
+            <div class="stat-card"><h3>${total}</h3><p>🔧 Total Services</p></div>
+            <div class="stat-card"><h3>${maintenance}</h3><p>🛠️ Maintenance</p></div>
+            <div class="stat-card"><h3>${repair}</h3><p>🔩 Repair</p></div>
+            <div class="stat-card"><h3>${cleaning}</h3><p>🧼 Cleaning</p></div>
+            <div class="stat-card"><h3>₹${totalValue.toLocaleString()}</h3><p>💰 Total Value</p></div>
+        `;
+    }
+
+    function renderServices() {
+        const container = document.getElementById("servicesGrid");
+        const noMsg = document.getElementById("noServicesMsg");
+        if (allServices.length === 0) { container.innerHTML = ""; noMsg.style.display = "block"; return; }
+        noMsg.style.display = "none";
+        container.innerHTML = allServices.map(s => `
+            <div class="service-card">
+                <div class="service-icon"><i class="${s.icon}"></i></div>
+                <div class="service-name">${s.name}</div>
+                <div class="service-price">₹${s.price}</div>
+                <div class="service-duration"><i class="fas fa-clock"></i> ${s.duration}</div>
+                <div class="service-duration"><i class="fas fa-tag"></i> ${s.category}</div>
+                <div class="service-actions">
+                    <button class="btn-sm" onclick="editService(${s.id})"><i class="fas fa-edit"></i> Edit</button>
+                    <button class="btn-sm btn-danger" onclick="deleteService(${s.id})"><i class="fas fa-trash"></i> Delete</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function openServiceModal(editId = null) {
+        editServiceId = editId;
+        document.getElementById("modalTitle").innerText = editId ? "Edit Service" : "Add Service";
+        if (editId) {
+            const service = allServices.find(s => s.id === editId);
+            if (service) {
+                document.getElementById("serviceName").value = service.name;
+                document.getElementById("servicePrice").value = service.price;
+                document.getElementById("serviceDuration").value = service.duration;
+                document.getElementById("serviceCategory").value = service.category;
+                document.getElementById("serviceDescription").value = service.description || "";
+                document.getElementById("serviceIcon").value = service.icon;
+            }
+        } else {
+            document.getElementById("serviceName").value = "";
+            document.getElementById("servicePrice").value = "";
+            document.getElementById("serviceDuration").value = "";
+            document.getElementById("serviceCategory").value = "maintenance";
+            document.getElementById("serviceDescription").value = "";
+            document.getElementById("serviceIcon").value = "fas fa-wrench";
+        }
+        document.getElementById("serviceModal").classList.add("active");
+    }
+
+    function editService(id) { openServiceModal(id); }
+
+    function saveService() {
+        const name = document.getElementById("serviceName").value.trim();
+        const price = parseInt(document.getElementById("servicePrice").value);
+        const duration = document.getElementById("serviceDuration").value.trim();
+        const category = document.getElementById("serviceCategory").value;
+        const description = document.getElementById("serviceDescription").value.trim();
+        const icon = document.getElementById("serviceIcon").value.trim() || "fas fa-wrench";
+        if (!name || !price || !duration) { alert("Please fill all required fields"); return; }
+        
+        if (editServiceId) {
+            const index = allServices.findIndex(s => s.id === editServiceId);
+            if (index !== -1) {
+                allServices[index] = { ...allServices[index], name, price, duration, category, description, icon };
+            }
+        } else {
+            const newId = Math.max(...allServices.map(s => s.id), 0) + 1;
+            allServices.push({ id: newId, name, price, duration, icon, description, category });
+        }
+        localStorage.setItem("garageServices", JSON.stringify(allServices));
+        closeModal();
+        loadServices();
+    }
+
+    function deleteService(id) {
+        if (confirm("Are you sure you want to delete this service?")) {
+            allServices = allServices.filter(s => s.id !== id);
+            localStorage.setItem("garageServices", JSON.stringify(allServices));
+            loadServices();
+        }
+    }
+
+    function resetDefaultServices() {
+        if (confirm("Reset to default services? This will delete all custom services.")) {
+            allServices = [...defaultServices];
+            localStorage.setItem("garageServices", JSON.stringify(allServices));
+            loadServices();
+        }
+    }
+
+    function exportServices() {
+        let csv = "ID,Name,Price,Duration,Category,Description\n";
+        allServices.forEach(s => {
+            csv += `${s.id},"${s.name}",${s.price},"${s.duration}","${s.category}","${s.description || ''}"\n`;
+        });
+        const blob = new Blob(["\uFEFF" + csv], {type: "text/csv;charset=utf-8;"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `autocare-services-${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+    }
+
+    function closeModal() { document.getElementById("serviceModal").classList.remove("active"); editServiceId = null; }
+    function logout() { localStorage.removeItem("adminLoggedIn"); window.location.href = "admin-login.html"; }
+
+    loadServices();
+</script>
+</body>
+</html>
