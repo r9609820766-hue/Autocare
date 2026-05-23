@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Employee Management - AutoCare Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #0f0f0f 0%, #1a1a1a 100%);
+            color: white;
+            transition: 0.3s ease;
+            z-index: 1000;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .sidebar.open { left: 0; }
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(230,57,70,0.3);
+        }
+        .sidebar-header h3 { font-family: 'Orbitron', monospace; font-size: 1.5rem; }
+        .sidebar-header span { color: #e63946; }
+        .sidebar-header p { font-size: 0.7rem; opacity: 0.7; margin-top: 5px; }
+        .sidebar-menu { padding: 20px 0; }
+        .menu-item {
+            padding: 14px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.3s;
+            color: rgba(255,255,255,0.8);
+            border-left: 3px solid transparent;
+            text-decoration: none;
+        }
+        .menu-item:hover { background: rgba(230,57,70,0.1); color: white; }
+        .menu-item.active { background: rgba(230,57,70,0.2); color: #e63946; border-left-color: #e63946; }
+        .menu-item i { width: 24px; font-size: 1.1rem; }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        .overlay.active { display: block; }
+
+        .main-content { min-height: 100vh; transition: 0.3s; }
+        .top-bar {
+            background: rgba(15,15,15,0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .menu-toggle { background: #e63946; color: white; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-size: 1.2rem; }
+        .page-title { font-size: 1.2rem; font-weight: 600; color: white; }
+        .logout-btn { background: #f44336; color: white; border: none; padding: 8px 15px; border-radius: 25px; cursor: pointer; }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 18px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid rgba(230,57,70,0.2);
+        }
+        .stat-card h3 { font-size: 1.6rem; color: #e63946; }
+        .stat-card p { color: #aaa; font-size: 0.85rem; }
+
+        /* Action Bar */
+        .action-bar {
+            background: rgba(255,255,255,0.03);
+            padding: 15px 20px;
+            margin: 0 20px 20px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .btn-primary {
+            background: #e63946;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary:hover { background: #c1121f; }
+        .btn-sm {
+            background: #e63946;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+        .btn-success { background: #4caf50; }
+        .btn-danger { background: #f44336; }
+        .btn-warning { background: #ff9800; }
+
+        /* Employees Grid */
+        .employees-container {
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            margin: 0 20px 20px;
+            padding: 20px;
+        }
+        .employees-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .employee-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 18px;
+            border: 1px solid rgba(230,57,70,0.2);
+            transition: 0.3s;
+        }
+        .employee-card:hover { border-color: #e63946; transform: translateY(-2px); }
+        .employee-card.inactive { opacity: 0.6; }
+        .employee-avatar {
+            width: 60px;
+            height: 60px;
+            background: #e63946;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+        }
+        .employee-name { font-size: 1.1rem; font-weight: 600; }
+        .employee-id { color: #aaa; font-size: 0.8rem; margin: 5px 0; }
+        .employee-role {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            margin: 8px 0;
+        }
+        .role-admin { background: #f44336; }
+        .role-manager { background: #2196f3; }
+        .role-employee { background: #4caf50; }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; display: inline-block; }
+        .status-active { background: #4caf50; }
+        .status-inactive { background: #666; }
+        .employee-actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1100;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1a1a1a;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            padding: 25px;
+            border: 1px solid #e63946;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: white; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #aaa; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(230,57,70,0.3);
+            border-radius: 8px;
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+        .no-data { text-align: center; padding: 40px; color: #888; }
+
+        .footer { background: #050505; color: rgba(255,255,255,0.6); padding: 1.5rem 5%; text-align: center; border-top: 1px solid rgba(230,57,70,0.3); margin-top: 20px; }
+
+        @media (min-width: 992px) {
+            .sidebar { left: 0; }
+            .menu-toggle { display: none; }
+            .main-content { margin-left: 280px; }
+        }
+        @media (max-width: 768px) {
+            .employees-grid { grid-template-columns: 1fr; }
+            .action-bar { flex-direction: column; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3>Auto<span>Care</span></h3>
+        <p>Admin Panel</p>
+    </div>
+    <div class="sidebar-menu">
+        <a href="admin-dashboard.html" class="menu-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="admin-bookings.html" class="menu-item"><i class="fas fa-calendar-alt"></i> Bookings</a>
+        <a href="admin-services.html" class="menu-item"><i class="fas fa-wrench"></i> Services</a>
+        <a href="admin-customers.html" class="menu-item"><i class="fas fa-users"></i> Customers</a>
+        <a href="admin-employees.html" class="menu-item active"><i class="fas fa-user-tie"></i> Employees</a>
+        <a href="admin-reports.html" class="menu-item"><i class="fas fa-chart-line"></i> Reports</a>
+        <a href="admin-settings.html" class="menu-item"><i class="fas fa-cog"></i> Settings</a>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main-content">
+    <div class="top-bar">
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <div class="page-title"><i class="fas fa-user-tie"></i> Employee Management</div>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <div class="action-bar">
+        <button class="btn-primary" onclick="openEmployeeModal()"><i class="fas fa-plus"></i> Add Employee</button>
+        <button class="btn-primary" onclick="exportEmployees()" style="background:#2196f3;"><i class="fas fa-download"></i> Export CSV</button>
+        <button class="btn-primary" onclick="resetDefaultEmployees()" style="background:#ff9800;"><i class="fas fa-undo"></i> Reset Default</button>
+    </div>
+
+    <div class="employees-container">
+        <div class="employees-grid" id="employeesGrid"></div>
+        <div id="noEmployeesMsg" class="no-data" style="display: none;">No employees found. Click "Add Employee" to create one.</div>
+    </div>
+</div>
+
+<!-- Employee Modal -->
+<div id="employeeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Add Employee</h3>
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="form-group">
+            <label>Employee ID *</label>
+            <input type="text" id="empId" placeholder="e.g., EMP001">
+        </div>
+        <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" id="empName" placeholder="Enter full name">
+        </div>
+        <div class="form-group">
+            <label>Mobile Number *</label>
+            <input type="tel" id="empMobile" placeholder="10 digit mobile number" maxlength="10">
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="empEmail" placeholder="email@example.com">
+        </div>
+        <div class="form-group">
+            <label>Password *</label>
+            <input type="password" id="empPassword" placeholder="Enter password">
+        </div>
+        <div class="form-group">
+            <label>Role *</label>
+            <select id="empRole">
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="employee">Employee</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Status</label>
+            <select id="empStatus">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn-primary" onclick="saveEmployee()">Save Employee</button>
+            <button class="btn-primary btn-danger" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>&copy; 2026 AutoCare - Professional Car Service Center</p>
+</footer>
+
+<script>
+    if(localStorage.getItem("adminLoggedIn") !== "true") window.location.href = "admin-login.html";
+
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const menuToggle = document.getElementById('menuToggle');
+    function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('active'); }
+    function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+    menuToggle.onclick = openSidebar;
+    window.addEventListener('resize', () => { if(window.innerWidth >= 992) closeSidebar(); });
+
+    let employees = [];
+    let editEmpId = null;
+
+    const defaultEmployees = [
+        { id: "ADMIN001", name: "Admin User", mobile: "9876543210", email: "admin@autocare.com", password: "admin123", role: "admin", status: "active" },
+        { id: "EMP001", name: "John Manager", mobile: "9876543211", email: "john@autocare.com", password: "emp123", role: "manager", status: "active" },
+        { id: "EMP002", name: "Jane Employee", mobile: "9876543212", email: "jane@autocare.com", password: "emp123", role: "employee", status: "active" }
+    ];
+
+    function loadEmployees() {
+        let stored = localStorage.getItem("garageEmployees");
+        if (stored && stored !== "undefined" && stored !== "null") {
+            try {
+                employees = JSON.parse(stored);
+            } catch(e) { employees = [...defaultEmployees]; }
+        } else {
+            employees = [...defaultEmployees];
+            localStorage.setItem("garageEmployees", JSON.stringify(employees));
+        }
+        renderEmployees();
+        loadStats();
+    }
+
+    function loadStats() {
+        const total = employees.length;
+        const active = employees.filter(e => e.status === "active").length;
+        const inactive = employees.filter(e => e.status === "inactive").length;
+        const admin = employees.filter(e => e.role === "admin").length;
+        const manager = employees.filter(e => e.role === "manager").length;
+        const emp = employees.filter(e => e.role === "employee").length;
+        document.getElementById("statsGrid").innerHTML = `
+            <div class="stat-card"><h3>${total}</h3><p>👥 Total Employees</p></div>
+            <div class="stat-card"><h3>${active}</h3><p>🟢 Active</p></div>
+            <div class="stat-card"><h3>${inactive}</h3><p>🔴 Inactive</p></div>
+            <div class="stat-card"><h3>${admin}</h3><p>👑 Admin</p></div>
+            <div class="stat-card"><h3>${manager}</h3><p>📋 Manager</p></div>
+            <div class="stat-card"><h3>${emp}</h3><p>👨‍💼 Employee</p></div>
+        `;
+    }
+
+    function renderEmployees() {
+        const container = document.getElementById("employeesGrid");
+        const noMsg = document.getElementById("noEmployeesMsg");
+        if (employees.length === 0) { container.innerHTML = ""; noMsg.style.display = "block"; return; }
+        noMsg.style.display = "none";
+        const roleNames = { admin: "Admin", manager: "Manager", employee: "Employee" };
+        container.innerHTML = employees.map(emp => `
+            <div class="employee-card ${emp.status === 'inactive' ? 'inactive' : ''}">
+                <div class="employee-avatar"><i class="fas fa-user"></i></div>
+                <div class="employee-name">${emp.name}</div>
+                <div class="employee-id">ID: ${emp.id}</div>
+                <div><span class="employee-role role-${emp.role}">${roleNames[emp.role]}</span></div>
+                <div><i class="fas fa-phone"></i> ${emp.mobile}</div>
+                <div><i class="fas fa-envelope"></i> ${emp.email || 'N/A'}</div>
+                <div style="margin:8px 0;"><span class="status-badge status-${emp.status}">${emp.status === 'active' ? '🟢 Active' : '🔴 Inactive'}</span></div>
+                <div class="employee-actions">
+                    <button class="btn-sm" onclick="editEmployee('${emp.id}')"><i class="fas fa-edit"></i> Edit</button>
+                    <button class="btn-sm ${emp.status === 'active' ? 'btn-warning' : 'btn-success'}" onclick="toggleStatus('${emp.id}')">
+                        <i class="fas ${emp.status === 'active' ? 'fa-ban' : 'fa-check'}"></i> ${emp.status === 'active' ? 'Deactivate' : 'Activate'}
+                    </button>
+                    <button class="btn-sm btn-danger" onclick="deleteEmployee('${emp.id}')"><i class="fas fa-trash"></i> Delete</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function openEmployeeModal(editId = null) {
+        editEmpId = editId;
+        document.getElementById("modalTitle").innerText = editId ? "Edit Employee" : "Add Employee";
+        if (editId) {
+            const emp = employees.find(e => e.id === editId);
+            if (emp) {
+                document.getElementById("empId").value = emp.id;
+                document.getElementById("empName").value = emp.name;
+                document.getElementById("empMobile").value = emp.mobile;
+                document.getElementById("empEmail").value = emp.email || "";
+                document.getElementById("empPassword").value = "";
+                document.getElementById("empRole").value = emp.role;
+                document.getElementById("empStatus").value = emp.status;
+            }
+        } else {
+            document.getElementById("empId").value = "";
+            document.getElementById("empName").value = "";
+            document.getElementById("empMobile").value = "";
+            document.getElementById("empEmail").value = "";
+            document.getElementById("empPassword").value = "";
+            document.getElementById("empRole").value = "employee";
+            document.getElementById("empStatus").value = "active";
+        }
+        document.getElementById("employeeModal").classList.add("active");
+    }
+
+    function editEmployee(id) { openEmployeeModal(id); }
+
+    function saveEmployee() {
+        const id = document.getElementById("empId").value.trim();
+        const name = document.getElementById("empName").value.trim();
+        const mobile = document.getElementById("empMobile").value.trim();
+        const email = document.getElementById("empEmail").value.trim();
+        const password = document.getElementById("empPassword").value;
+        const role = document.getElementById("empRole").value;
+        const status = document.getElementById("empStatus").value;
+        if (!id || !name || !mobile) { alert("Please fill required fields"); return; }
+        if (mobile.length !== 10 || isNaN(mobile)) { alert("Enter valid 10 digit mobile number"); return; }
+        if (!editEmpId && !password) { alert("Enter password for new employee"); return; }
+        
+        if (editEmpId) {
+            const index = employees.findIndex(e => e.id === editEmpId);
+            if (index !== -1) {
+                employees[index] = { ...employees[index], name, mobile, email, role, status };
+                if (password) employees[index].password = password;
+            }
+        } else {
+            if (employees.some(e => e.id === id)) { alert("Employee ID already exists!"); return; }
+            employees.push({ id, name, mobile, email, password, role, status });
+        }
+        localStorage.setItem("garageEmployees", JSON.stringify(employees));
+        closeModal();
+        loadEmployees();
+    }
+
+    function toggleStatus(id) {
+        const index = employees.findIndex(e => e.id === id);
+        if (index !== -1) {
+            employees[index].status = employees[index].status === "active" ? "inactive" : "active";
+            localStorage.setItem("garageEmployees", JSON.stringify(employees));
+            loadEmployees();
+        }
+    }
+
+    function deleteEmployee(id) {
+        if (confirm("Delete this employee?")) {
+            employees = employees.filter(e => e.id !== id);
+            localStorage.setItem("garageEmployees", JSON.stringify(employees));
+            loadEmployees();
+        }
+    }
+
+    function resetDefaultEmployees() {
+        if (confirm("Reset to default employees?")) {
+            employees = [...defaultEmployees];
+            localStorage.setItem("garageEmployees", JSON.stringify(employees));
+            loadEmployees();
+        }
+    }
+
+    function exportEmployees() {
+        let csv = "ID,Name,Mobile,Email,Role,Status\n";
+        employees.forEach(e => {
+            csv += `${e.id},"${e.name}",${e.mobile},"${e.email || ''}",${e.role},${e.status}\n`;
+        });
+        const blob = new Blob(["\uFEFF" + csv], {type: "text/csv;charset=utf-8;"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `autocare-employees-${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+    }
+
+    function closeModal() { document.getElementById("employeeModal").classList.remove("active"); editEmpId = null; }
+    function logout() { localStorage.removeItem("adminLoggedIn"); window.location.href = "admin-login.html"; }
+
+    loadEmployees();
+</script>
+</body>
+</html>
