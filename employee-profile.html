@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>My Profile - Employee Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #0f0f0f 0%, #1a1a1a 100%);
+            color: white;
+            transition: 0.3s ease;
+            z-index: 1000;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .sidebar.open { left: 0; }
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(230,57,70,0.3);
+        }
+        .sidebar-header h3 { font-family: 'Orbitron', monospace; font-size: 1.5rem; }
+        .sidebar-header span { color: #e63946; }
+        .sidebar-header p { font-size: 0.7rem; opacity: 0.7; margin-top: 5px; }
+        .sidebar-menu { padding: 20px 0; }
+        .menu-item {
+            padding: 14px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.3s;
+            color: rgba(255,255,255,0.8);
+            border-left: 3px solid transparent;
+            text-decoration: none;
+        }
+        .menu-item:hover { background: rgba(230,57,70,0.1); color: white; }
+        .menu-item.active { background: rgba(230,57,70,0.2); color: #e63946; border-left-color: #e63946; }
+        .menu-item i { width: 24px; font-size: 1.1rem; }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        .overlay.active { display: block; }
+
+        .main-content { min-height: 100vh; transition: 0.3s; }
+        .top-bar {
+            background: rgba(15,15,15,0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .menu-toggle { background: #e63946; color: white; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-size: 1.2rem; }
+        .page-title { font-size: 1.2rem; font-weight: 600; color: white; }
+        .logout-btn { background: #f44336; color: white; border: none; padding: 8px 15px; border-radius: 25px; cursor: pointer; }
+
+        /* Employee Info Bar */
+        .emp-info-bar {
+            background: rgba(255,255,255,0.05);
+            padding: 15px 20px;
+            margin: 20px 20px 0;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .emp-avatar {
+            width: 50px;
+            height: 50px;
+            background: #e63946;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+        .emp-details { display: flex; align-items: center; gap: 15px; }
+        .emp-name { font-weight: 600; }
+        .emp-role { font-size: 0.8rem; color: #aaa; }
+
+        /* Profile Container */
+        .profile-container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .profile-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 25px;
+            padding: 30px;
+            border: 1px solid rgba(230,57,70,0.2);
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: #e63946;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+        }
+        .profile-title h2 { font-size: 1.5rem; margin-bottom: 5px; }
+        .profile-title p { color: #aaa; }
+        .info-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 15px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #aaa; font-weight: 500; }
+        .info-value { color: white; font-weight: 500; }
+        .edit-btn {
+            background: #e63946;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .edit-btn:hover { background: #c1121f; }
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-box {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .stat-box h3 { font-size: 1.5rem; color: #e63946; }
+        .stat-box p { font-size: 0.8rem; color: #aaa; }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1100;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1a1a1a;
+            border-radius: 20px;
+            max-width: 450px;
+            width: 90%;
+            padding: 25px;
+            border: 1px solid #e63946;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: white; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #aaa; }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(230,57,70,0.3);
+            border-radius: 8px;
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-primary {
+            background: #e63946;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .footer { background: #050505; color: rgba(255,255,255,0.6); padding: 1.5rem 5%; text-align: center; border-top: 1px solid rgba(230,57,70,0.3); margin-top: 30px; }
+
+        @media (min-width: 992px) {
+            .sidebar { left: 0; }
+            .menu-toggle { display: none; }
+            .main-content { margin-left: 280px; }
+        }
+        @media (max-width: 768px) {
+            .profile-header { flex-direction: column; text-align: center; }
+            .stats-section { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3>Auto<span>Care</span></h3>
+        <p>Employee Panel</p>
+    </div>
+    <div class="sidebar-menu">
+        <a href="employee-dashboard.html" class="menu-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="employee-bookings.html" class="menu-item"><i class="fas fa-calendar-alt"></i> Bookings</a>
+        <a href="employee-profile.html" class="menu-item active"><i class="fas fa-user"></i> My Profile</a>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main-content">
+    <div class="top-bar">
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <div class="page-title"><i class="fas fa-user"></i> My Profile</div>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+
+    <div class="emp-info-bar">
+        <div class="emp-details">
+            <div class="emp-avatar"><i class="fas fa-user"></i></div>
+            <div><div class="emp-name" id="empNameDisplay">Employee User</div><div class="emp-role" id="empRoleDisplay">Employee</div></div>
+        </div>
+        <div><i class="fas fa-calendar"></i> Member since: <span id="memberSince"></span></div>
+    </div>
+
+    <div class="profile-container">
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-avatar"><i class="fas fa-user"></i></div>
+                <div class="profile-title">
+                    <h2 id="profileName">Employee User</h2>
+                    <p id="profileRole">Employee</p>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3 style="margin-bottom: 15px;">Personal Information</h3>
+                <div class="info-row">
+                    <span class="info-label">Employee ID</span>
+                    <span class="info-value" id="profileId">EMP001</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Mobile Number</span>
+                    <span class="info-value" id="profileMobile">+91 98765 43210</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Email Address</span>
+                    <span class="info-value" id="profileEmail">employee@autocare.com</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Join Date</span>
+                    <span class="info-value" id="profileJoinDate">2024-01-01</span>
+                </div>
+                <button class="edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i> Edit Profile</button>
+            </div>
+
+            <div class="stats-section">
+                <div class="stat-box">
+                    <h3 id="statBookings">0</h3>
+                    <p>Total Bookings<br>Processed</p>
+                </div>
+                <div class="stat-box">
+                    <h3 id="statCompleted">0</h3>
+                    <p>Completed<br>Services</p>
+                </div>
+                <div class="stat-box">
+                    <h3 id="statPending">0</h3>
+                    <p>Pending<br>Tasks</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit Profile</h3>
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="editName" placeholder="Enter full name">
+        </div>
+        <div class="form-group">
+            <label>Mobile Number</label>
+            <input type="tel" id="editMobile" placeholder="10 digit mobile number" maxlength="10">
+        </div>
+        <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="editEmail" placeholder="email@example.com">
+        </div>
+        <div class="form-group">
+            <label>New Password (leave blank to keep same)</label>
+            <input type="password" id="editPassword" placeholder="Enter new password">
+        </div>
+        <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>&copy; 2026 AutoCare - Professional Car Service Center</p>
+</footer>
+
+<script>
+    if(localStorage.getItem("employeeLoggedIn") !== "true") window.location.href = "admin-login.html";
+
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const menuToggle = document.getElementById('menuToggle');
+    function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('active'); }
+    function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+    menuToggle.onclick = openSidebar;
+    window.addEventListener('resize', () => { if(window.innerWidth >= 992) closeSidebar(); });
+
+    let currentEmployee = { id: "EMP001", name: "Employee User", mobile: "9876543210", email: "employee@autocare.com", role: "employee", joinDate: "2024-01-01" };
+    let allEmployees = JSON.parse(localStorage.getItem("garageEmployees")) || [];
+    let foundEmp = allEmployees.find(e => e.id === "EMP001");
+    if (foundEmp) currentEmployee = foundEmp;
+
+    document.getElementById("memberSince").innerText = currentEmployee.joinDate || "2024-01-01";
+    document.getElementById("empNameDisplay").innerText = currentEmployee.name;
+    document.getElementById("empRoleDisplay").innerText = currentEmployee.role === "admin" ? "Admin" : (currentEmployee.role === "manager" ? "Manager" : "Employee");
+    document.getElementById("profileName").innerText = currentEmployee.name;
+    document.getElementById("profileRole").innerText = currentEmployee.role === "admin" ? "Admin" : (currentEmployee.role === "manager" ? "Manager" : "Employee");
+    document.getElementById("profileId").innerText = currentEmployee.id;
+    document.getElementById("profileMobile").innerText = currentEmployee.mobile;
+    document.getElementById("profileEmail").innerText = currentEmployee.email || "Not provided";
+    document.getElementById("profileJoinDate").innerText = currentEmployee.joinDate || "2024-01-01";
+
+    let allBookings = JSON.parse(localStorage.getItem("garageBookings")) || [];
+    let myBookings = allBookings.filter(b => b.assignedEmployee === currentEmployee.id);
+    document.getElementById("statBookings").innerText = myBookings.length;
+    document.getElementById("statCompleted").innerText = myBookings.filter(b => b.status === "completed").length;
+    document.getElementById("statPending").innerText = myBookings.filter(b => b.status === "pending" || b.status === "confirmed").length;
+
+    function openEditModal() {
+        document.getElementById("editName").value = currentEmployee.name;
+        document.getElementById("editMobile").value = currentEmployee.mobile;
+        document.getElementById("editEmail").value = currentEmployee.email || "";
+        document.getElementById("editPassword").value = "";
+        document.getElementById("editModal").classList.add("active");
+    }
+
+    function saveProfile() {
+        const newName = document.getElementById("editName").value.trim();
+        const newMobile = document.getElementById("editMobile").value.trim();
+        const newEmail = document.getElementById("editEmail").value.trim();
+        const newPassword = document.getElementById("editPassword").value;
+        if (!newName || !newMobile) { alert("Please fill name and mobile"); return; }
+        if (newMobile.length !== 10 || isNaN(newMobile)) { alert("Enter valid 10 digit mobile number"); return; }
+        
+        let employees = JSON.parse(localStorage.getItem("garageEmployees")) || [];
+        const index = employees.findIndex(e => e.id === currentEmployee.id);
+        if (index !== -1) {
+            employees[index].name = newName;
+            employees[index].mobile = newMobile;
+            employees[index].email = newEmail;
+            if (newPassword) employees[index].password = newPassword;
+            localStorage.setItem("garageEmployees", JSON.stringify(employees));
+            currentEmployee = employees[index];
+        }
+        
+        document.getElementById("empNameDisplay").innerText = newName;
+        document.getElementById("profileName").innerText = newName;
+        document.getElementById("profileMobile").innerText = newMobile;
+        document.getElementById("profileEmail").innerText = newEmail || "Not provided";
+        closeModal();
+        alert("Profile updated successfully!");
+    }
+
+    function closeModal() { document.getElementById("editModal").classList.remove("active"); }
+    function logout() { localStorage.removeItem("employeeLoggedIn"); window.location.href = "admin-login.html"; }
+</script>
+</body>
+</html>
